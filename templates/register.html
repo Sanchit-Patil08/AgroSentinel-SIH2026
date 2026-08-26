@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account — AgroSentinel</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <a class="brand" href="/">
+      <span class="brand-mark">🛰️</span> AgroSentinel
+    </a>
+    <h1>Create your account</h1>
+    <p class="sub">Save your fields and track health over time.</p>
+
+    <div class="auth-error" id="authError"></div>
+
+    <form class="auth-form" id="registerForm">
+      <div class="field-group">
+        <label>Full name</label>
+        <input type="text" id="name" required autocomplete="name">
+      </div>
+      <div class="field-group">
+        <label>Email</label>
+        <input type="email" id="email" required autocomplete="email">
+      </div>
+      <div class="field-group">
+        <label>Password</label>
+        <input type="password" id="password" required minlength="6" autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn btn-primary" id="submitBtn">Create Account</button>
+    </form>
+
+    <p class="auth-switch">Already have an account? <a href="/login">Log in</a></p>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>

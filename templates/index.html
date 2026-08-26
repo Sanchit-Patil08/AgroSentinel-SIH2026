@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroSentinel — AI-Powered Early Crop Health Detection</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="container">
+  <nav class="nav">
+    <a class="brand" href="/">
+      <span class="brand-mark">🛰️</span> AgroSentinel
+    </a>
+    <div style="display:flex; gap:10px; align-items:center;">
+      {% if current_user.is_authenticated %}
+        <a class="btn btn-ghost btn-sm" href="/dashboard">My Fields</a>
+      {% else %}
+        <a class="btn btn-ghost btn-sm" href="/login">Log In</a>
+      {% endif %}
+      <a class="btn btn-primary" href="/demo">Try Demo →</a>
+    </div>
+  </nav>
+</header>
+
+<section class="container hero">
+  <div>
+    <span class="eyebrow">Satellite AI for Precision Agriculture</span>
+    <h1>Catch crop stress weeks before it's visible in the field.</h1>
+    <p class="lead">
+      AgroSentinel combines multispectral satellite monitoring with hyperspectral
+      verification to detect early signs of crop stress and map field health
+      zone-by-zone — so interventions like irrigation, nutrients or pest control
+      can be targeted precisely, before yield is lost.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="/demo">Try Demo →</a>
+      <a class="btn btn-ghost" href="#how-it-works">See how it works</a>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="zone-grid" id="heroZoneGrid"></div>
+    <div class="caption">
+      <span>Zone-wise NDVI classification</span>
+      <span>Sample field output</span>
+    </div>
+  </div>
+</section>
+
+<section class="container section" id="how-it-works">
+  <h2 class="section-title">How AgroSentinel sees your field</h2>
+  <p class="section-sub">
+    A layered spectral analysis pipeline turns raw satellite passes into
+    actionable, zone-level crop health intelligence.
+  </p>
+  <div class="grid-3">
+    <div class="card">
+      <div class="icon">📡</div>
+      <h3>Multispectral Monitoring</h3>
+      <p>Sentinel-2 style Red / NIR / Red-Edge / SWIR bands drive frequent,
+      field-wide vegetation index tracking (NDVI, NDRE, SAVI, NDMI).</p>
+    </div>
+    <div class="card">
+      <div class="icon">🔬</div>
+      <h3>Hyperspectral Verification</h3>
+      <p>Narrow-band hyperspectral signatures cross-check zones flagged as
+      stressed, confirming subtle stress before it's visible to the eye.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🗺️</div>
+      <h3>Zone-Wise Intervention</h3>
+      <p>Fields are automatically divided into zones, color-coded by health,
+      so treatment can be targeted rather than applied uniformly.</p>
+    </div>
+  </div>
+</section>
+
+<section class="container section">
+  <h2 class="section-title">From field boundary to zone-wise health in minutes</h2>
+  <div class="flow-steps">
+    <div class="flow-step"><div class="num">1</div><p>Draw your field boundary on the map</p></div>
+    <div class="flow-step"><div class="num">2</div><p>Enter crop type &amp; growth stage</p></div>
+    <div class="flow-step"><div class="num">3</div><p>Satellite data is retrieved &amp; processed</p></div>
+    <div class="flow-step"><div class="num">4</div><p>Field is split into geographical zones</p></div>
+    <div class="flow-step"><div class="num">5</div><p>Spectral indices analysed per zone</p></div>
+    <div class="flow-step"><div class="num">6</div><p>Zone-wise crop health displayed on map</p></div>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="cta-banner">
+    <div>
+      <h2>Ready to see your field's health?</h2>
+      <p>Draw a field boundary and get a full zone-wise spectral analysis in seconds.</p>
+    </div>
+    <a class="btn btn-primary" href="/demo">Try Demo →</a>
+  </div>
+</section>
+
+<section class="container section" style="padding-top:0;">
+  <div class="cta-banner" style="background:linear-gradient(135deg, var(--green-600), var(--green-500));">
+    <div>
+      <h2>Monitoring a real farm?</h2>
+      <p>Create a free account to save your fields and track health over time, analysis after analysis.</p>
+    </div>
+    {% if current_user.is_authenticated %}
+      <a class="btn btn-primary" href="/dashboard">Go to My Fields →</a>
+    {% else %}
+      <a class="btn btn-primary" href="/register">Create Free Account →</a>
+    {% endif %}
+  </div>
+</section>
+
+<footer class="container footer">
+  <span>AgroSentinel — Hackathon Prototype</span>
+  <span>Architecture ready for Copernicus Data Space / Sentinel Hub</span>
+</footer>
+
+<script>
+  // small decorative zone-health grid on the hero card
+  const colors = ["#1c8a5f", "#22a96f", "#f2a93b", "#1c8a5f", "#e35b4e",
+                   "#22a96f", "#f2a93b", "#1c8a5f", "#22a96f", "#1c8a5f",
+                   "#e35b4e", "#f2a93b", "#22a96f", "#1c8a5f", "#22a96f",
+                   "#1c8a5f", "#f2a93b", "#22a96f", "#1c8a5f", "#22a96f",
+                   "#22a96f", "#1c8a5f", "#f2a93b", "#22a96f", "#1c8a5f"];
+  const grid = document.getElementById("heroZoneGrid");
+  colors.forEach(c => {
+    const d = document.createElement("div");
+    d.style.background = c;
+    grid.appendChild(d);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ field.name }} — AgroSentinel</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+
+<div class="demo-header">
+  <a class="brand" href="/dashboard" style="font-size:1rem;">
+    <span class="brand-mark" style="width:28px;height:28px;font-size:0.95rem;">🛰️</span> AgroSentinel
+  </a>
+  <div class="steps"><span class="active">{{ field.name }}</span></div>
+  <a class="btn btn-ghost btn-sm" href="/dashboard">← Back to My Fields</a>
+</div>
+
+<div class="demo-layout">
+
+  <aside class="panel">
+    <div>
+      <h2>{{ field.name }}</h2>
+      <p class="hint">Saved field · created {{ field.created_at.strftime("%d %b %Y") }}</p>
+    </div>
+
+    <div class="field-meta-block">
+      <div class="meta-row"><span class="label">Crop</span><span class="value">{{ field.crop_type }}</span></div>
+      <div class="meta-row"><span class="label">Stage</span><span class="value">{{ field.crop_stage }}</span></div>
+      <div class="meta-row"><span class="label">Area</span><span class="value">{{ field.area_ha or "—" }} ha</span></div>
+    </div>
+
+    <button class="btn btn-primary" id="analyzeBtn">Analyze / Refresh Analysis</button>
+    <div class="auth-error" id="analyzeError"></div>
+
+    <div class="divider"></div>
+
+    <div id="resultsArea">
+      <div class="empty-state">Loading field…</div>
+    </div>
+  </aside>
+
+  <div class="map-wrap">
+    <div id="map"></div>
+
+    <div class="map-toolbar">
+      <div class="legend">
+        <span><span class="dot" style="background:#1c8a5f"></span>Healthy</span>
+        <span><span class="dot" style="background:#f2a93b"></span>Moderate</span>
+        <span><span class="dot" style="background:#e35b4e"></span>Stressed</span>
+      </div>
+    </div>
+
+    <div class="loading-overlay hidden" id="loadingOverlay">
+      <div class="spinner"></div>
+      <div id="loadingText" style="font-size:0.9rem;color:#47584f;">Retrieving satellite data…</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const FIELD_ID = {{ field.id }};
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/zone_render.js') }}"></script>
+<script src="{{ url_for('static', filename='js/field_detail.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+Flask==3.0.3
+flask-cors==4.0.1
+numpy==1.26.4
+shapely==2.0.4
+geopandas==0.14.4
+rasterio==1.3.10
+requests==2.32.3
+python-dotenv==1.0.1
+
+# --- Persistence layer (farmer accounts, saved fields, analysis history) ---
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+
+# --- Continuous weather monitoring (weather_service.py + weather_scheduler.py) ---
+# requests is already listed above and covers the OpenWeatherMap HTTP calls.
+# APScheduler runs the periodic per-field weather refresh job in-process.
+APScheduler==3.10.4
+
+# --- PostgreSQL driver for production deployment ---
+# Only required when DATABASE_URL points at postgresql://... (SQLite,
+# the local/dev default, needs no extra driver). Install with:
+#   pip install psycopg2-binary
+psycopg2-binary==2.9.9
+
+# Optional (only needed if you later move geometry columns to true PostGIS
+# geometry types instead of the portable JSON columns used by default)
+# GeoAlchemy2==0.15.1

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroSentinel Demo — Field Health Analysis</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+</head>
+<body>
+
+<div class="demo-header">
+  <a class="brand" href="/" style="font-size:1rem;">
+    <span class="brand-mark" style="width:28px;height:28px;font-size:0.95rem;">🛰️</span> AgroSentinel
+  </a>
+  <div class="steps">
+    <span id="stepDraw" class="active">1. Draw Field</span> ·
+    <span id="stepDetails">2. Crop Details</span> ·
+    <span id="stepAnalyze">3. Analyze</span> ·
+    <span id="stepResults">4. Zone Results</span>
+  </div>
+  <div style="display:flex; gap:8px;">
+    {% if current_user.is_authenticated %}
+      <a class="btn btn-ghost btn-sm" href="/dashboard">My Fields</a>
+    {% else %}
+      <a class="btn btn-ghost btn-sm" href="/register">Save fields — Sign up</a>
+    {% endif %}
+    <a class="btn btn-ghost btn-sm" href="/">Exit Demo</a>
+  </div>
+</div>
+
+<div class="demo-layout">
+
+  <!-- ================= LEFT PANEL ================= -->
+  <aside class="panel">
+
+    <div>
+      <h2>1. Locate &amp; Draw Field</h2>
+      <p class="hint">Search your region, then use the polygon tool on the map to draw your field boundary.</p>
+    </div>
+
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="Search for a place or region…">
+      <button class="btn btn-ghost btn-sm" id="searchBtn">Go</button>
+    </div>
+
+    <div class="draw-status" id="drawStatus">No field drawn yet — use ▱ tool on the map</div>
+
+    <div class="divider"></div>
+
+    <div>
+      <h2>2. Crop Details</h2>
+      <p class="hint">Basic crop information helps calibrate the health interpretation.</p>
+    </div>
+
+    <div class="field-group">
+      <label for="cropType">Crop Type</label>
+      <select id="cropType"><option value="">Loading…</option></select>
+    </div>
+    <div class="field-group">
+      <label for="cropStage">Crop Stage</label>
+      <select id="cropStage"><option value="">Loading…</option></select>
+    </div>
+
+    <button class="btn btn-primary" id="analyzeBtn" disabled>Analyze Field</button>
+
+    <div class="divider"></div>
+
+    <div id="resultsArea">
+      <div class="empty-state">Field-health summary will appear here after analysis.</div>
+    </div>
+
+  </aside>
+
+  <!-- ================= MAP ================= -->
+  <div class="map-wrap">
+    <div id="map"></div>
+
+    <div class="map-toolbar">
+      <div class="legend">
+        <span><span class="dot" style="background:#1c8a5f"></span>Healthy</span>
+        <span><span class="dot" style="background:#f2a93b"></span>Moderate</span>
+        <span><span class="dot" style="background:#e35b4e"></span>Stressed</span>
+      </div>
+    </div>
+
+    <div class="loading-overlay hidden" id="loadingOverlay">
+      <div class="spinner"></div>
+      <div id="loadingText" style="font-size:0.9rem;color:#47584f;">Retrieving satellite data…</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+<script src="{{ url_for('static', filename='js/demo.js') }}"></script>
+</body>
+</html>

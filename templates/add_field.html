@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Field — AgroSentinel</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+</head>
+<body>
+
+<div class="demo-header">
+  <a class="brand" href="/dashboard" style="font-size:1rem;">
+    <span class="brand-mark" style="width:28px;height:28px;font-size:0.95rem;">🛰️</span> AgroSentinel
+  </a>
+  <div class="steps">
+    <span class="active">Add Field</span>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="/dashboard">Cancel</a>
+</div>
+
+<div class="demo-layout">
+
+  <aside class="panel">
+    <div>
+      <h2>1. Locate &amp; Draw Field</h2>
+      <p class="hint">Search your region, then use the polygon tool on the map to draw your field boundary.</p>
+    </div>
+
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="Search for a place or region…">
+      <button class="btn btn-ghost btn-sm" id="searchBtn">Go</button>
+    </div>
+
+    <div class="draw-status" id="drawStatus">No field drawn yet — use ▱ tool on the map</div>
+
+    <div class="divider"></div>
+
+    <div>
+      <h2>2. Field Details</h2>
+    </div>
+
+    <div class="field-group">
+      <label for="fieldName">Field Name</label>
+      <input type="text" id="fieldName" class="field-name-input" placeholder="e.g. North Plot">
+    </div>
+    <div class="field-group">
+      <label for="cropType">Crop Type</label>
+      <select id="cropType"><option value="">Loading…</option></select>
+    </div>
+    <div class="field-group">
+      <label for="cropStage">Crop Stage</label>
+      <select id="cropStage"><option value="">Loading…</option></select>
+    </div>
+
+    <button class="btn btn-primary" id="saveBtn" disabled>Save Field</button>
+    <div class="auth-error" id="saveError"></div>
+  </aside>
+
+  <div class="map-wrap">
+    <div id="map"></div>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+<script src="{{ url_for('static', filename='js/add_field.js') }}"></script>
+</body>
+</html>
