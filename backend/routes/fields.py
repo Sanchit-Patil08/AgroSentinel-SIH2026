@@ -22,11 +22,16 @@ import logging
 from flask import Blueprint, jsonify, render_template, request, abort
 from flask_login import login_required, current_user
 
+from backend.config import Config
 from backend.extensions import db
-from backend.models import Field, Analysis, ZoneResult
+from backend.models import Field, Analysis, ZoneResult, FeatureSnapshot, RiskAssessment
 from backend.services.field_analyzer import analyze_field
 from backend.services.zone_processor import compute_field_area_ha
 from backend.services.weather_service import WeatherService, fetch_and_store_weather
+from backend.services.iot_service import iot_service
+from backend.services.feature_engineering import build_feature_snapshot
+from backend.services.risk_engine import assess_risk
+from backend.services import ml_risk_model
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +82,8 @@ def api_list_fields():
         # Simple, rule-based monitoring status for the dashboard card --
         # not a prediction, just a summary of the latest weather reading.
         data["weather_status"] = WeatherService.summarize_status(data.get("latest_weather"))
+        latest_risk = f.latest_risk_assessment()
+        data["latest_risk"] = latest_risk.to_dict() if latest_risk else None
         result.append(data)
     return jsonify({"fields": result})
 
@@ -205,7 +212,112 @@ def api_analyze_field(field_id):
 
     db.session.commit()
 
-    return jsonify({"analysis": analysis.to_dict(include_zones=True)})
+    # Intelligence layer: build a feature snapshot from satellite + weather
+    # + IoT + history, then score it with the risk engine. Best-effort --
+    # a farmer must still get their satellite analysis even if this step
+    # has a problem, exactly like the initial-weather-fetch pattern above.
+    risk_payload = None
+    try:
+        risk = _build_intelligence_layer(field, analysis, zones)
+        if risk is not None:
+            risk_payload = risk.to_dict()
+    except Exception:  # noqa: BLE001
+        logger.exception("Feature/risk pipeline failed for field_id=%s analysis_id=%s", field.id, analysis.id)
+
+    response = analysis.to_dict(include_zones=True)
+    response["risk"] = risk_payload
+    return jsonify({"analysis": response})
+
+
+def _build_intelligence_layer(field: Field, analysis: Analysis, zones: list) -> "RiskAssessment | None":
+    """Builds and persists one FeatureSnapshot + RiskAssessment tied to
+    `analysis`. Pulls in the most recent weather/IoT history (ensuring at
+    least one IoT reading exists, simulating one if the field has no real
+    sensors yet -- see iot_service.fetch_or_simulate_latest), then hands
+    the resulting flat feature dict to BOTH the rule-based risk engine
+    (causes + recommendations + confidence -- the decision/explanation
+    layer, always used) and the ML stress model (a probability -- the
+    prediction layer, see ml_risk_model.py).
+
+    Status precedence (risk_level / risk_score = the field-level
+    Healthy/Moderate/Stressed status):
+      - ML model available and returns a usable prediction -> the ML
+        prediction becomes risk_level/risk_score (status_source='ml_v1').
+      - ML unavailable/disabled/failed -> falls back to the rule engine's
+        risk_level/risk_score, unchanged from before (status_source=
+        'rule_based_v1').
+    causes/recommendations/confidence ALWAYS come from the rule engine,
+    regardless of which engine won the status -- this function never lets
+    the ML layer touch those.
+    """
+    try:
+        iot_service.fetch_or_simulate_latest(field)
+    except Exception:  # noqa: BLE001
+        logger.exception("IoT fallback reading failed for field_id=%s", field.id)
+
+    weather_rows = field.weather_observations.limit(Config.FEATURE_WEATHER_WINDOW).all()
+    sensor_rows = field.sensor_readings.limit(Config.FEATURE_SENSOR_WINDOW).all()
+
+    features = build_feature_snapshot(field, analysis, zones, weather_rows, sensor_rows)
+
+    snapshot = FeatureSnapshot(
+        field_id=field.id,
+        analysis_id=analysis.id,
+        feature_version=Config.FEATURE_SCHEMA_VERSION,
+        features=features,
+    )
+    db.session.add(snapshot)
+    db.session.flush()  # assign snapshot.id before linking it from RiskAssessment
+
+    # Rule engine ALWAYS runs -- it remains the sole source of causes,
+    # recommendations, confidence, and the fallback status.
+    result = assess_risk(features)
+
+    # ML prediction layer -- independent of, and computed alongside, the
+    # rule-based result above. Best-effort: if the model isn't trained yet
+    # or prediction fails for any reason, ml_risk_model.predict() already
+    # returns a clean {"available": False, ...} dict rather than raising,
+    # so this can never take down the (working) rule-based assessment.
+    if Config.ML_STRESS_MODEL_ENABLED:
+        try:
+            ml_result = ml_risk_model.predict(features)
+        except Exception:  # noqa: BLE001
+            logger.exception("ML stress model prediction failed for field_id=%s", field.id)
+            ml_result = {"available": False, "note": "ML prediction failed unexpectedly -- see server logs."}
+    else:
+        ml_result = {"available": False, "note": "ML stress model disabled (ML_STRESS_MODEL_ENABLED=0)."}
+
+    # Status precedence: ML wins when it actually produced a usable
+    # prediction; otherwise fall back to the rule engine's status exactly
+    # as before. Never fabricated -- ml_result["available"] is only True
+    # when ml_risk_model.py loaded a real trained artifact and scored
+    # `features` with it (see that module for the full contract).
+    ml_stress_probability = ml_result.get("stress_probability")
+    if ml_result.get("available") and ml_stress_probability is not None:
+        status_risk_level = ml_result["risk_level"]
+        status_risk_score = ml_stress_probability
+        status_source = "ml_v1"
+    else:
+        status_risk_level = result["risk_level"]
+        status_risk_score = result["risk_score"]
+        status_source = "rule_based_v1"
+
+    risk = RiskAssessment(
+        field_id=field.id,
+        analysis_id=analysis.id,
+        feature_snapshot_id=snapshot.id,
+        risk_level=status_risk_level,
+        risk_score=status_risk_score,
+        confidence=result["confidence"],
+        causes=result["causes"],
+        recommendations=result["recommendations"],
+        method=result["method"],
+        status_source=status_source,
+        ml_prediction=ml_result,
+    )
+    db.session.add(risk)
+    db.session.commit()
+    return risk
 
 
 @fields_bp.get("/api/fields/<int:field_id>/analyses")
@@ -273,3 +385,106 @@ def api_field_weather_history(field_id):
     limit = request.args.get("limit", default=24, type=int)
     observations = field.weather_observations.limit(limit).all()  # already newest-first
     return jsonify({"observations": [o.to_dict() for o in observations]})
+
+
+# ------------------------------------------------------------- IoT sensors -
+@fields_bp.get("/api/fields/<int:field_id>/sensors")
+@login_required
+def api_get_field_sensors(field_id):
+    """Latest sensor reading for this field. If no real device has ever
+    reported in, a simulated reading is generated (mirrors how weather
+    behaves for a brand-new field) so the panel is never permanently
+    empty -- see backend/services/iot_service.py."""
+    field = _get_owned_field_or_404(field_id)
+    try:
+        latest = iot_service.fetch_or_simulate_latest(field)
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"error": f"Could not fetch sensor data: {exc}"}), 502
+
+    if latest is None:
+        return jsonify({"reading": None})
+    return jsonify({"reading": latest.to_dict()})
+
+
+@fields_bp.post("/api/fields/<int:field_id>/sensors")
+@login_required
+def api_post_field_sensor_reading(field_id):
+    """Ingests a real sensor reading (device push or manual entry).
+
+    Accepts a JSON body with any subset of: soil_moisture_pct,
+    soil_temperature_c, soil_ph, soil_ec_ds_m, leaf_wetness_pct,
+    air_temperature_c, air_humidity_pct, light_lux, battery_pct, plus
+    optional sensor_id, zone_label, latitude, longitude. Unrecognized
+    extra keys are kept in raw_data rather than rejected, so a new device
+    type doesn't need a code change to start sending data.
+    """
+    field = _get_owned_field_or_404(field_id)
+    payload = request.get_json(force=True, silent=True) or {}
+
+    known_keys = {
+        "soil_moisture_pct", "soil_temperature_c", "soil_ph", "soil_ec_ds_m",
+        "leaf_wetness_pct", "air_temperature_c", "air_humidity_pct",
+        "light_lux", "battery_pct",
+    }
+    if not any(k in payload and payload[k] is not None for k in known_keys):
+        return jsonify({"error": "At least one sensor reading value is required."}), 400
+
+    payload.setdefault("source", "device")
+    reading = iot_service.store_reading(field, payload)
+    return jsonify({"reading": reading.to_dict()}), 201
+
+
+@fields_bp.post("/api/fields/<int:field_id>/sensors/simulate")
+@login_required
+def api_simulate_field_sensor_reading(field_id):
+    """Manually generates a fresh simulated reading -- the IoT equivalent
+    of the 'Refresh Weather' button, useful for demoing/developing without
+    real hardware deployed yet."""
+    field = _get_owned_field_or_404(field_id)
+    try:
+        reading = iot_service.force_simulate(field)
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"error": f"Could not simulate a reading: {exc}"}), 502
+    return jsonify({"reading": reading.to_dict()})
+
+
+@fields_bp.get("/api/fields/<int:field_id>/sensors/history")
+@login_required
+def api_field_sensor_history(field_id):
+    field = _get_owned_field_or_404(field_id)
+    limit = request.args.get("limit", default=24, type=int)
+    readings = field.sensor_readings.limit(limit).all()  # already newest-first
+    return jsonify({"readings": [r.to_dict() for r in readings]})
+
+
+# ------------------------------------------------------ stress / risk -----
+@fields_bp.get("/api/fields/<int:field_id>/risk")
+@login_required
+def api_get_field_risk(field_id):
+    """Latest stress/risk assessment for this field (produced alongside
+    the most recent satellite analysis). Returns risk: null if the field
+    has never been analyzed yet, rather than an error."""
+    field = _get_owned_field_or_404(field_id)
+    latest = field.latest_risk_assessment()
+    return jsonify({"risk": latest.to_dict() if latest else None})
+
+
+@fields_bp.get("/api/fields/<int:field_id>/risk/history")
+@login_required
+def api_field_risk_history(field_id):
+    field = _get_owned_field_or_404(field_id)
+    limit = request.args.get("limit", default=24, type=int)
+    assessments = field.risk_assessments.limit(limit).all()  # already newest-first
+    return jsonify({"assessments": [r.to_dict() for r in assessments]})
+
+
+# ------------------------------------------------- ML feature snapshots ---
+@fields_bp.get("/api/fields/<int:field_id>/features/latest")
+@login_required
+def api_get_latest_feature_snapshot(field_id):
+    """Exposes the raw feature vector behind the latest risk assessment --
+    intended for development/debugging and for exporting training data for
+    the future ML model, not for the main farmer-facing UI."""
+    field = _get_owned_field_or_404(field_id)
+    latest = field.feature_snapshots.first()
+    return jsonify({"feature_snapshot": latest.to_dict() if latest else None})

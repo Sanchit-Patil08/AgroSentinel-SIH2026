@@ -3,3 +3,5 @@ venv/
 instance/
 __pycache__/
 *.pyc
+backend/ml_models/*.joblib
+backend/ml_models/*.json

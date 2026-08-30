@@ -16,6 +16,11 @@ function getHealthColor(status) {
   return "#e35b4e";
 }
 
+// zone_id -> Leaflet layer, rebuilt every renderZoneLayer() call, so other
+// scripts (the zones-tab side list) can look up / re-open a zone's popup
+// without re-implementing the polygon draw logic.
+const zoneLayerRegistry = {};
+
 /**
  * Draws zone polygons (GeoJSON, [lon, lat] rings) onto a Leaflet
  * featureGroup, color-coded by health_status, with a click popup showing
@@ -23,6 +28,7 @@ function getHealthColor(status) {
  */
 function renderZoneLayer(map, zoneLayer, zones) {
   zoneLayer.clearLayers();
+  Object.keys(zoneLayerRegistry).forEach((k) => delete zoneLayerRegistry[k]);
 
   (zones || []).forEach((zone) => {
     const coordinates = zone.geometry.coordinates;
@@ -61,6 +67,7 @@ function renderZoneLayer(map, zoneLayer, zones) {
     `);
 
     polygon.addTo(zoneLayer);
+    zoneLayerRegistry[zone.zone_id] = polygon;
   });
 
   if (zones && zones.length) {
@@ -68,6 +75,15 @@ function renderZoneLayer(map, zoneLayer, zones) {
     if (bounds.isValid()) return bounds;
   }
   return null;
+}
+
+/** Opens a zone's existing map popup/marker, used by the zone list rows. */
+function focusZone(map, zoneId) {
+  const layer = zoneLayerRegistry[zoneId];
+  if (!layer) return;
+  const bounds = layer.getBounds();
+  if (bounds.isValid()) map.fitBounds(bounds, { padding: [60, 60], maxZoom: 18 });
+  layer.openPopup();
 }
 
 /** Builds the field-health summary card markup shown beside the map. */
@@ -93,4 +109,53 @@ function buildSummaryCardHtml(summary, dataSource) {
       ${dataSource ? `<div class="result-source">Data source: ${escapeHtml(dataSource)}</div>` : ""}
     </div>
   `;
+}
+
+/** Compact clickable zone list shown beside the map on the Zones tab. */
+function buildZoneListHtml(zones) {
+  if (!zones || !zones.length) {
+    return `<div class="empty-state">No zones yet — run an analysis.</div>`;
+  }
+  return zones
+    .map((zone) => {
+      const color = getHealthColor(zone.health_status);
+      const conf = zone.hyperspectral ? `${zone.hyperspectral.confidence_pct}% conf.` : "";
+      return `
+        <div class="zone-table-row" data-zone-id="${zone.zone_id}">
+          <span class="ztr-dot" style="background:${color}"></span>
+          <span class="ztr-main">
+            <span class="ztr-title">Zone ${zone.zone_id} · ${escapeHtml(zone.health_status)}</span>
+            <span class="ztr-detail">${zone.area_ha} ha · NDVI ${zone.ndvi}</span>
+          </span>
+          <span class="ztr-conf">${escapeHtml(conf)}</span>
+        </div>`;
+    })
+    .join("");
+}
+
+/** Full spectral-index table for the Evidence tab (raw data, third tier). */
+function buildEvidenceZoneTableHtml(zones) {
+  if (!zones || !zones.length) {
+    return `<div class="empty-state">No analysis yet.</div>`;
+  }
+  const rows = zones
+    .map(
+      (z) => `
+      <tr>
+        <td>Zone ${z.zone_id}</td>
+        <td>${escapeHtml(z.health_status)}</td>
+        <td>${z.area_ha}</td>
+        <td>${z.ndvi ?? "—"}</td>
+        <td>${z.ndre ?? "—"}</td>
+        <td>${z.savi ?? "—"}</td>
+        <td>${z.ndmi ?? "—"}</td>
+        <td>${z.hyperspectral ? z.hyperspectral.confidence_pct + "%" : "—"}</td>
+      </tr>`
+    )
+    .join("");
+  return `
+    <table class="evidence-zone-table">
+      <thead><tr><th>Zone</th><th>Health</th><th>Area (ha)</th><th>NDVI</th><th>NDRE</th><th>SAVI</th><th>NDMI</th><th>Hyperspectral</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }

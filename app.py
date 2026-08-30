@@ -21,7 +21,9 @@ from backend.config import Config
 from backend.extensions import db, login_manager
 from backend.routes.api import api_bp
 from backend.routes.auth import auth_bp
+from backend.routes.diagnosis import diagnosis_bp
 from backend.routes.fields import fields_bp
+from backend.routes.intervention import intervention_bp
 
 
 def create_app() -> Flask:
@@ -41,6 +43,8 @@ def create_app() -> Flask:
     app.register_blueprint(api_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(fields_bp)
+    app.register_blueprint(diagnosis_bp)
+    app.register_blueprint(intervention_bp)
 
     @app.get("/")
     def landing():

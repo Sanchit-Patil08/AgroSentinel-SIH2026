@@ -1,0 +1,9 @@
+# Training-only dependencies for ml/train_stress_model.py.
+# Not needed to RUN the Flask app -- only to (re)train the model.
+# (The app's own inference-time deps -- scikit-learn, joblib -- already
+# live in the project's top-level requirements.txt.)
+
+pandas==2.2.2
+scikit-learn==1.5.1
+joblib==1.4.2
+kagglehub==0.3.4

@@ -3,91 +3,213 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ field.name }} — AgroSentinel</title>
+<title>{{ field.name }} — Field Intelligence — AgroSentinel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
-<div class="demo-header">
-  <a class="brand" href="/dashboard" style="font-size:1rem;">
-    <span class="brand-mark" style="width:28px;height:28px;font-size:0.95rem;">🛰️</span> AgroSentinel
-  </a>
-  <div class="steps"><span class="active">{{ field.name }}</span></div>
-  <a class="btn btn-ghost btn-sm" href="/dashboard">← Back to My Fields</a>
+<div class="fi-header">
+  <div class="fi-header-top">
+    <a class="fi-back" href="/dashboard">← Dashboard</a>
+    <div class="fi-header-actions">
+      <button class="btn btn-outline-soft btn-sm" id="refreshWeatherBtn">🌦️ Refresh Weather</button>
+      <button class="btn btn-outline-soft btn-sm" id="simulateSensorBtn">📶 Simulate Sensor</button>
+      <button class="btn btn-primary btn-sm" id="analyzeBtn">⟳ Analyze / Refresh Analysis</button>
+    </div>
+  </div>
+  <div class="auth-error" id="analyzeError"></div>
+
+  <div class="fi-title-row">
+    <div>
+      <h1>{{ field.name }}</h1>
+      <p class="fi-sub">{{ field.crop_type }} · {{ field.crop_stage }} · {{ field.area_ha or "—" }} ha</p>
+    </div>
+    <div class="fi-status-block" id="fiStatusBlock">
+      <span class="status-badge unknown" id="fiStatusBadge">FIELD STATUS<br><strong>Not analyzed</strong></span>
+      <a class="btn btn-outline-soft btn-sm" href="#zones-tab" data-tab-target="zones">Investigate Stress →</a>
+    </div>
+  </div>
 </div>
 
-<div class="demo-layout">
+<ul class="nav fi-tabs" id="fiTabs">
+  <li class="nav-item"><button class="nav-link active" data-tab="overview">Overview</button></li>
+  <li class="nav-item"><button class="nav-link" data-tab="zones">Zones &amp; Map</button></li>
+  <li class="nav-item"><button class="nav-link" data-tab="evidence">Evidence</button></li>
+  <li class="nav-item"><button class="nav-link" data-tab="history">History</button></li>
+</ul>
 
-  <aside class="panel">
-    <div>
-      <h2>{{ field.name }}</h2>
-      <p class="hint">Saved field · created {{ field.created_at.strftime("%d %b %Y") }}</p>
-    </div>
+<div class="fi-body">
 
-    <div class="field-meta-block">
-      <div class="meta-row"><span class="label">Crop</span><span class="value">{{ field.crop_type }}</span></div>
-      <div class="meta-row"><span class="label">Stage</span><span class="value">{{ field.crop_stage }}</span></div>
-      <div class="meta-row"><span class="label">Area</span><span class="value">{{ field.area_ha or "—" }} ha</span></div>
-    </div>
+  <!-- ================= OVERVIEW TAB ================= -->
+  <div class="fi-pane" data-pane="overview">
+    <div class="row gx-4">
+      <div class="col-lg-7">
+        <div class="fi-block" id="whyFlaggedBlock">
+          <h3>Why is this field flagged?</h3>
+          <ul class="evidence-bullets" id="evidenceBullets"><li class="empty-state">Run an analysis to see evidence.</li></ul>
+        </div>
 
-    <div class="divider"></div>
+        <div class="fi-block" id="mlPredictionBlock">
+          <h3>AI Stress Prediction <span class="ml-badge-label">ML model</span></h3>
+          <div id="mlPredictionContent"><div class="empty-state">Run an analysis to get a prediction.</div></div>
+        </div>
 
-    <div class="weather-card" id="weatherCurrent">
-      <div class="card-title-row">
-        <h3>Current Weather</h3>
-        <button class="btn btn-ghost btn-sm" id="refreshWeatherBtn">Refresh</button>
+        <div class="fi-block" id="confidenceBlockWrap">
+          <h3>Confidence</h3>
+          <div id="fiConfidenceBlock"><div class="empty-state">—</div></div>
+        </div>
+
+        <div class="fi-block" id="likelyCausesBlock">
+          <h3>Likely Causes</h3>
+          <div id="causeBars"><div class="empty-state">No causes identified yet.</div></div>
+        </div>
       </div>
-      <div id="weatherContent">
-        <div class="empty-state">Loading weather…</div>
+
+      <div class="col-lg-5">
+        <div class="fi-block fi-nextstep" id="nextStepBlock">
+          <h3>Recommended Next Step</h3>
+          <div id="nextStepContent"><div class="empty-state">Run an analysis to get a recommendation.</div></div>
+          <div class="fi-actions-row">
+            <button class="btn btn-primary btn-sm" id="diagnoseFieldBtn">🔍 Diagnose This Field</button>
+            <button class="btn btn-outline-soft btn-sm disabled" title="Coming soon">📷 Diagnose From Image</button>
+            <button class="btn btn-outline-soft btn-sm" id="getSensorReadingBtn">📡 Get Sensor Reading</button>
+            <button class="btn btn-outline-soft btn-sm" data-tab-target="zones">View Affected Zones</button>
+          </div>
+        </div>
+
+        <div class="fi-block" id="interventionBlock">
+          <h3>Recommended Intervention</h3>
+          <p class="diag-caveat">Field-specific, from this field's own diagnosis and the approved-use pesticide dataset — not general pesticide information.</p>
+          <div id="interventionContent"><div class="empty-state">Run a diagnosis to see intervention guidance.</div></div>
+        </div>
+
+        <div class="fi-block">
+          <h3>Current Weather</h3>
+          <div id="weatherContent"><div class="empty-state">Loading weather…</div></div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="divider"></div>
-
-    <button class="btn btn-primary" id="analyzeBtn">Analyze / Refresh Analysis</button>
-    <div class="auth-error" id="analyzeError"></div>
-
-    <div class="divider"></div>
-
-    <div id="resultsArea">
-      <div class="empty-state">Loading field…</div>
+  <!-- ================= ZONES TAB ================= -->
+  <div class="fi-pane" data-pane="zones" style="display:none;" id="zones-tab">
+    <div class="fi-zones-layout">
+      <div class="map-wrap">
+        <div id="map"></div>
+        <div class="map-toolbar">
+          <div class="legend">
+            <span><span class="dot" style="background:#279463"></span>Healthy</span>
+            <span><span class="dot" style="background:#dd9a28"></span>Moderate</span>
+            <span><span class="dot" style="background:#d8483a"></span>Stressed</span>
+          </div>
+        </div>
+        <div class="loading-overlay hidden" id="loadingOverlay">
+          <div class="spinner"></div>
+          <div id="loadingText" style="font-size:0.9rem;color:var(--ink-600);">Retrieving satellite data…</div>
+        </div>
+      </div>
+      <aside class="fi-zone-sidebar">
+        <div id="resultsArea"><div class="empty-state">Loading field…</div></div>
+        <div class="fi-zone-hint">Click a zone on the map, or a row below, to inspect it.</div>
+        <div id="zoneTable"><div class="empty-state">No zones yet.</div></div>
+      </aside>
     </div>
+  </div>
 
-    <div class="divider"></div>
-
-    <div class="weather-card" id="weatherHistoryCard">
-      <h3>Weather History</h3>
-      <div id="weatherHistoryList" class="weather-history-list">
-        <div class="empty-state">Loading weather history…</div>
+  <!-- ================= EVIDENCE TAB ================= -->
+  <div class="fi-pane" data-pane="evidence" style="display:none;">
+    <div class="row gx-4">
+      <div class="col-lg-6">
+        <div class="fi-block">
+          <h3>Satellite Indices — All Zones</h3>
+          <div id="evidenceZoneTable"><div class="empty-state">No analysis yet.</div></div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="fi-block">
+          <h3>IoT Sensor Readings</h3>
+          <div id="sensorContent"><div class="empty-state">Loading sensor data…</div></div>
+        </div>
+        <div class="fi-block">
+          <h3>Stress / Risk Assessment <span class="ml-badge-label">Raw</span></h3>
+          <div id="riskContent"><div class="empty-state">Run an analysis to see the risk assessment.</div></div>
+        </div>
       </div>
     </div>
-  </aside>
+  </div>
 
-  <div class="map-wrap">
-    <div id="map"></div>
-
-    <div class="map-toolbar">
-      <div class="legend">
-        <span><span class="dot" style="background:#1c8a5f"></span>Healthy</span>
-        <span><span class="dot" style="background:#f2a93b"></span>Moderate</span>
-        <span><span class="dot" style="background:#e35b4e"></span>Stressed</span>
+  <!-- ================= HISTORY TAB ================= -->
+  <div class="fi-pane" data-pane="history" style="display:none;">
+    <div class="row gx-4">
+      <div class="col-lg-6">
+        <div class="fi-block">
+          <h3>Analysis History</h3>
+          <div id="analysisHistory"><div class="empty-state">Loading analysis history…</div></div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="fi-block">
+          <h3>Weather History</h3>
+          <div id="weatherHistoryList" class="weather-history-list"><div class="empty-state">Loading weather history…</div></div>
+        </div>
       </div>
     </div>
-
-    <div class="loading-overlay hidden" id="loadingOverlay">
-      <div class="spinner"></div>
-      <div id="loadingText" style="font-size:0.9rem;color:#47584f;">Retrieving satellite data…</div>
+    <div class="row gx-4">
+      <div class="col-lg-12">
+        <div class="fi-block">
+          <h3>Diagnosis History</h3>
+          <div id="diagnosisHistory" class="diagnosis-history-list"><div class="empty-state">Loading diagnosis history…</div></div>
+        </div>
+      </div>
     </div>
   </div>
 
 </div>
 
+<!-- ================= DIAGNOSE THIS FIELD MODAL ================= -->
+<div class="modal fade" id="diagnoseModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content diag-modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">🔍 Field Diagnosis</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="diagModalBody">
+        <div class="empty-state">Loading field context…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= INTERVENTION SIMULATOR MODAL ================= -->
+<div class="modal fade" id="interventionSimModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content diag-modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">🧪 Intervention Simulator</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="intervSimModalBody">
+        <div class="empty-state">Loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script>
   const FIELD_ID = {{ field.id }};
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="{{ url_for('static', filename='js/zone_render.js') }}"></script>
+<script src="{{ url_for('static', filename='js/intelligence_render.js') }}"></script>
 <script src="{{ url_for('static', filename='js/field_detail.js') }}"></script>
+<script src="{{ url_for('static', filename='js/diagnosis.js') }}"></script>
+<script src="{{ url_for('static', filename='js/intervention.js') }}"></script>
 </body>
 </html>

@@ -3,36 +3,110 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Fields — AgroSentinel</title>
+<title>Dashboard — AgroSentinel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-<div class="app-nav">
-  <a class="brand" href="/">
-    <span class="brand-mark">🛰️</span> AgroSentinel
-  </a>
-  <div class="user-chip">
-    <span class="user-avatar">{{ current_user.name[:1].upper() }}</span>
-    <span>{{ current_user.name }}</span>
-    <a class="btn btn-ghost btn-sm" href="/logout">Log Out</a>
+<nav class="navbar navbar-expand-lg navbar-agro">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand" href="/dashboard">
+      <span class="brand-mark">🛰️</span> AgroSentinel
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link active" href="/dashboard">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="#field-overview">My Fields</a></li>
+        <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1">Action Center<span class="soon-tag">Soon</span></a></li>
+        <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1">Pest &amp; Disease<span class="soon-tag">Soon</span></a></li>
+        <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1">Pesticide Advisor<span class="soon-tag">Soon</span></a></li>
+        <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1">Sensor Network<span class="soon-tag">Soon</span></a></li>
+      </ul>
+      <div class="user-chip">
+        <span class="user-avatar">{{ current_user.name[:1].upper() }}</span>
+        <span>{{ current_user.name }}</span>
+        <a class="btn btn-ghost btn-sm" href="/logout">Log Out</a>
+      </div>
+    </div>
   </div>
-</div>
+</nav>
 
-<div class="container section">
-  <div class="dash-header">
+<div class="container-fluid px-4 cc-wrap">
+
+  <!-- ============ HEADER ============ -->
+  <div class="cc-header">
     <div>
-      <h1>My Fields</h1>
-      <p>Saved fields and their most recent health status.</p>
+      <p class="cc-eyebrow" id="greetingLine">Good day, {{ current_user.name.split(' ')[0] }}</p>
+      <h1>Today's Farm Status</h1>
     </div>
     <a class="btn btn-primary" href="/fields/new">+ Add Field</a>
   </div>
 
-  <div class="field-grid" id="fieldGrid">
-    <div class="empty-state">Loading your fields…</div>
+  <div class="cc-stat-strip" id="statStrip">
+    <div class="cc-stat"><span class="n">—</span><span class="l">Fields monitored</span></div>
+    <div class="cc-stat warn"><span class="n">—</span><span class="l">Need attention</span></div>
+    <div class="cc-stat"><span class="n">—</span><span class="l">Stable</span></div>
+    <div class="cc-stat"><span class="n">—</span><span class="l">Not yet analyzed</span></div>
   </div>
+
+  <!-- ============ PRIORITY ALERTS ============ -->
+  <section class="cc-section">
+    <div class="cc-section-label">Priority Alerts</div>
+    <div id="priorityAlerts">
+      <div class="empty-state">Loading…</div>
+    </div>
+  </section>
+
+  <div class="row gx-4">
+    <!-- ============ RECOMMENDED INSPECTIONS ============ -->
+    <div class="col-lg-5">
+      <section class="cc-section">
+        <div class="cc-section-label">Recommended Inspections</div>
+        <ol class="cc-inspect-list" id="inspectList">
+          <li class="empty-state">Loading…</li>
+        </ol>
+      </section>
+    </div>
+
+    <!-- ============ ACTION CENTER PREVIEW + QUICK LINKS ============ -->
+    <div class="col-lg-7">
+      <section class="cc-section">
+        <div class="cc-section-label">Action Center</div>
+        <div class="cc-action-preview" id="actionPreview">
+          <div>
+            <span class="n" id="actionCount">0</span>
+            <span>actions recommended today</span>
+          </div>
+          <span class="btn btn-ghost btn-sm disabled">View Action Center</span>
+        </div>
+      </section>
+
+      <section class="cc-section">
+        <div class="cc-section-label">Quick Links</div>
+        <div class="cc-quicklinks">
+          <span class="cc-quicklink">🩺 Pest &amp; Disease<em>Soon</em></span>
+          <span class="cc-quicklink">🧪 Pesticide Advisor<em>Soon</em></span>
+          <span class="cc-quicklink">📡 Sensor Plan<em>Soon</em></span>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ============ FIELD OVERVIEW ============ -->
+  <section class="cc-section" id="field-overview">
+    <div class="cc-section-label">Field Overview</div>
+    <div class="field-grid" id="fieldGrid">
+      <div class="empty-state">Loading your fields…</div>
+    </div>
+  </section>
+
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 </html>

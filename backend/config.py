@@ -20,9 +20,19 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INSTANCE_DIR = os.path.join(BASE_DIR, "instance")
 os.makedirs(INSTANCE_DIR, exist_ok=True)
 
+# Field-diagnosis evidence photos (manual inspection uploads). Lives next
+# to the SQLite file under instance/ -- git-ignored, same "not part of the
+# repo" treatment as the DB itself. Served back out through an
+# ownership-checked Flask route (backend/routes/diagnosis.py), never as a
+# static/ file, so a farmer can only ever fetch their own evidence.
+DIAGNOSIS_UPLOAD_DIR = os.path.join(INSTANCE_DIR, "uploads", "diagnosis")
+os.makedirs(DIAGNOSIS_UPLOAD_DIR, exist_ok=True)
+
 
 class Config:
     # --- General ---
+
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     SECRET_KEY = os.getenv("SECRET_KEY", "agrosentinel-dev-key")
     DEBUG = os.getenv("FLASK_DEBUG", "1") == "1"
 
@@ -75,6 +85,40 @@ class Config:
     MIN_ZONE_AREA_HA = 0.05     # zones smaller than this (after clipping) are dropped
     TARGET_ZONE_COUNT_RANGE = (6, 30)  # aim to split a field into this many zones
 
+    # --- IoT sensor data (intelligence layer) ---
+    # Same "sample vs live" pattern as weather: no real hardware is required
+    # to demo/develop. When a field has no real device readings yet,
+    # iot_service can generate a deterministic simulated reading on demand
+    # (analogous to WeatherService._fetch_sample) so the sensor panel and
+    # the feature/risk pipeline downstream always have something to work
+    # with. Real devices push readings via POST /api/fields/<id>/sensors
+    # at any time -- once real rows exist those are always preferred.
+    SIMULATE_IOT_DATA = os.getenv("SIMULATE_IOT_DATA", "1") == "1"
+
+    # --- Intelligence layer: feature engineering + risk engine ---
+    # Number of most-recent WeatherObservation / SensorReading rows folded
+    # into rolling-average / trend features for one FeatureSnapshot.
+    FEATURE_WEATHER_WINDOW = int(os.getenv("FEATURE_WEATHER_WINDOW", "8"))
+    FEATURE_SENSOR_WINDOW = int(os.getenv("FEATURE_SENSOR_WINDOW", "8"))
+    FEATURE_SCHEMA_VERSION = "v1"
+
+    # Current risk engine implementation tag, stored on every RiskAssessment
+    # row so historical rows stay interpretable once a real ML model
+    # ('ml_v1', ...) eventually replaces the rule-based scorer.
+    RISK_ENGINE_METHOD = "rule_based_v1"
+
+    # --- ML stress-prediction layer (backend/services/ml_risk_model.py) ---
+    # This is a SEPARATE, additive prediction layer next to the rule-based
+    # risk engine above -- see RiskAssessment.ml_prediction. The model
+    # artifact itself (backend/ml_models/stress_model.joblib +
+    # stress_model_metadata.json) is produced offline by
+    # ml/train_stress_model.py and is NOT part of the git repo (see
+    # .gitignore); until that script has been run once, ml_risk_model.py
+    # gracefully reports predictions as unavailable rather than guessing.
+    # Flip to "0" to skip even attempting to load/predict (e.g. to save a
+    # few ms per analysis while iterating on something unrelated).
+    ML_STRESS_MODEL_ENABLED = os.getenv("ML_STRESS_MODEL_ENABLED", "1") == "1"
+
     # --- Database (persistence layer) ---
     # Local/dev default: a file-based SQLite DB under /instance -- zero setup,
     # already a real server-style relational DB file, no external service
@@ -95,6 +139,19 @@ class Config:
             "postgres://", "postgresql://", 1
         )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # --- Field diagnosis (manual inspection evidence uploads) ---
+    DIAGNOSIS_UPLOAD_DIR = DIAGNOSIS_UPLOAD_DIR
+    DIAGNOSIS_ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "heic"}
+    # Per-file cap (bytes). Applied in the route via Flask's
+    # MAX_CONTENT_LENGTH so an oversized upload is rejected before it's
+    # fully read into memory, not after.
+    DIAGNOSIS_MAX_UPLOAD_MB = int(os.getenv("DIAGNOSIS_MAX_UPLOAD_MB", "12"))
+    MAX_CONTENT_LENGTH = DIAGNOSIS_MAX_UPLOAD_MB * 1024 * 1024
+    # How many of a field's most-stressed zones the diagnosis flow surfaces
+    # as "priority zones to inspect" (mirrors the "Zone 4, 7, 12" example
+    # in the brief rather than listing every stressed zone).
+    DIAGNOSIS_MAX_PRIORITY_ZONES = 6
 
     # --- Optional PostGIS (not required -- geometries are stored as portable
     # GeoJSON/JSON columns so the schema works identically on SQLite and
