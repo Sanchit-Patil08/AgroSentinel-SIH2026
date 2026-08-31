@@ -1,3 +1,209 @@
+<!-- The UX structuring I want for this file 
+┌──────────────────────────────────────────────────────────────────────┐
+│ OVERVIEW                                                             │
+│ A quick explanation of what is happening in this field.              │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ FIELD HEALTH                                                         │
+│                                                                      │
+│ ┌───────────────────────────────┐  ┌──────────────────────────────┐ │
+│ │ 🔴 HIGH STRESS                │  │ AI STRESS PREDICTION         │ │
+│ │                               │  │                              │ │
+│ │ This field needs attention.   │  │ Predicted condition         │ │
+│ │                               │  │                              │ │
+│ │ Healthy     0 zones           │  │ █████████░  87%             │ │
+│ │ Moderate    5 zones           │  │                              │ │
+│ │ Stressed   10 zones           │  │ Model prediction             │ │
+│ │                               │  │                              │ │
+│ │ [ Investigate Stress → ]      │  │ Confidence: High             │ │
+│ └───────────────────────────────┘  └──────────────────────────────┘ │
+│                                                                      │
+├──────────────────────────────────────────────────────────────────────┤
+│ WHY IS THIS FIELD FLAGGED?                                          │
+│                                                                      │
+│  • NDVI is significantly lower in affected zones                    │
+│  • Moisture indicators suggest crop stress                           │
+│  • Recent weather conditions may be contributing                     │
+│                                                                      │
+├──────────────────────────────────────────────────────────────────────┤
+│ LIKELY CAUSES                                                        │
+│                                                                      │
+│  Water Stress          ████████████████  High                        │
+│  Nutrient Stress       ██████████       Medium                      │
+│  Disease Risk          ██████           Low                         │
+│                                                                      │
+├──────────────────────────────────────────────────────────────────────┤
+│ WHAT SHOULD YOU DO?                                                  │
+│                                                                      │
+│ ┌──────────────────────────────────────────────────────────────────┐ │
+│ │ 🔍 Recommended Next Step                                         │ │
+│ │                                                                  │ │
+│ │ Inspect the affected zones before taking action.                │ │
+│ │                                                                  │ │
+│ │ [ Diagnose This Field ]  [ View Affected Zones → ]              │ │
+│ │ [ Get Sensor Reading ]                                           │ │
+│ └──────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+├──────────────────────────────────────────────────────────────────────┤
+│ RECOMMENDED INTERVENTION                                             │
+│                                                                      │
+│  Existing interventionContent                                        │
+│  ─────────────────────────────────────────────────────────────────  │
+│  [ existing options / details / actions ]                           │
+│                                                                      │
+├──────────────────────────────────────────────────────────────────────┤
+│ CURRENT WEATHER                                                      │
+│                                                                      │
+│  🌡 Temperature     💧 Humidity     🌧 Rainfall     💨 Wind          │
+│       27°C              82%            0.23mm        12km/h         │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ ZONES & MAP                                                          │
+│                                                                      │
+│ Explore where the stress is occurring in your field.                │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ ┌─────────────────────────────────────────────┐ ┌──────────────────┐ │
+│ │                                             │ │ FIELD HEALTH     │ │
+│ │                                             │ │                  │ │
+│ │                                             │ │ 🔴 Stressed  10  │ │
+│ │              FIELD MAP                     │ │ 🟡 Moderate   5  │ │
+│ │                                             │ │ 🟢 Healthy    0  │ │
+│ │              🟢 🟢 🟡                      │ │                  │ │
+│ │           🟢 🟡 🔴 🔴                      │ │ ──────────────── │ │
+│ │              🔴 🔴                         │ │ SELECTED ZONE    │ │
+│ │                                             │ │                  │ │
+│ │                                             │ │ Zone 07          │ │
+│ │                                             │ │ Stressed         │ │
+│ │                                             │ │ NDVI: 0.21       │ │
+│ │                                             │ │ NDRE: 0.18       │ │
+│ │                                             │ │                  │ │
+│ │                                             │ │ [View Evidence]  │ │
+│ └─────────────────────────────────────────────┘ └──────────────────┘ │
+│                                                                      │
+│ ZONE BREAKDOWN                                                       │
+│                                                                      │
+│ ┌────────┬──────────┬────────┬────────┬──────────┐                  │
+│ │ Zone   │ Status   │ NDVI   │ NDRE   │ NDMI     │                  │
+│ ├────────┼──────────┼────────┼────────┼──────────┤                  │
+│ │ 01     │ 🟢       │ 0.71   │ 0.62   │ 0.54     │                  │
+│ │ 02     │ 🟡       │ 0.48   │ 0.41   │ 0.32     │                  │
+│ │ 03     │ 🔴       │ 0.21   │ 0.18   │ 0.16     │                  │
+│ └────────┴──────────┴────────┴────────┴──────────┘                  │
+└──────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ EVIDENCE                                                             │
+│                                                                      │
+│ Data used by AgroSentinel to assess this field.                      │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ SATELLITE EVIDENCE                                                   │
+│                                                                      │
+│ ┌──────────────────────────────────────────────────────────────────┐ │
+│ │ Zone-level vegetation & moisture indicators                      │ │
+│ │                                                                  │ │
+│ │  Existing #evidenceZoneTable                                    │ │
+│ └──────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ FIELD SENSOR DATA                                                    │
+│                                                                      │
+│ ┌──────────────────────────────────────────────────────────────────┐ │
+│ │ Existing #sensorContent                                          │ │
+│ └──────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ STRESS / RISK ASSESSMENT                                             │
+│                                                                      │
+│ ┌──────────────────────────────────────────────────────────────────┐ │
+│ │ Existing #riskContent                                            │ │
+│ │                                                                  │ │
+│ │                              RAW DATA                             │ │
+│ └──────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ INTERVENTIONS                                                        │
+│                                                                      │
+│ Track what you actually did to this field and what happened after.  │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ CURRENT / RECENT INTERVENTION                                       │
+│                                                                      │
+│ ┌──────────────────────────────────────────────────────────────────┐ │
+│ │ Existing intervention history                                   │ │
+│ │                                                                  │ │
+│ │ Intervention                                                    │ │
+│ │ ─────────────────────────────────────────────────────────────── │ │
+│ │ Date        Treatment        Area        Status                  │ │
+│ │                                                                  │ │
+│ │ 28 Aug      Existing data    Targeted    Follow-up pending      │ │
+│ │                                                                  │ │
+│ │                              [View Details]                      │ │
+│ └──────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+│                                                                      │
+│ FOLLOW-UP                                                            │
+│                                                                      │
+│ ┌──────────────────────────────────────────────────────────────────┐ │
+│ │ Before / After analysis                                          │ │
+│ │                                                                  │ │
+│ │ Existing follow-up information                                  │ │
+│ └──────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ HISTORY                                                              │
+│                                                                      │
+│ Everything that has happened to this field.                         │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  FILTER:  [ All ▼ ]                                                  │
+│                                                                      │
+│  TODAY                                                               │
+│   │                                                                  │
+│   ●  Analysis refreshed                                              │
+│   │  Satellite analysis completed                                   │
+│   │  10 stressed zones detected                                     │
+│   │                                                                  │
+│   ●  Weather updated                                                 │
+│   │  27°C · 82% humidity · Light rain                               │
+│   │                                                                  │
+│  28 AUG                                                              │
+│   │                                                                  │
+│   ●  Diagnosis completed                                             │
+│   │  Field diagnosed with existing diagnosis                         │
+│   │                                                                  │
+│   ●  Intervention recorded                                           │
+│   │  Follow-up scheduled                                             │
+│   │                                                                  │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ ANALYSIS HISTORY                                                     │
+│ Existing #analysisHistory                                            │
+│                                                                      │
+│ WEATHER HISTORY                                                      │
+│ Existing #weatherHistoryList                                         │
+│                                                                      │
+│ DIAGNOSIS HISTORY                                                   │
+│ Existing #diagnosisHistory                                           │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+-->
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,6 +245,7 @@
   <li class="nav-item"><button class="nav-link active" data-tab="overview">Overview</button></li>
   <li class="nav-item"><button class="nav-link" data-tab="zones">Zones &amp; Map</button></li>
   <li class="nav-item"><button class="nav-link" data-tab="evidence">Evidence</button></li>
+  <li class="nav-item"><button class="nav-link" data-tab="interventions">Interventions</button></li>
   <li class="nav-item"><button class="nav-link" data-tab="history">History</button></li>
 </ul>
 
@@ -142,6 +349,29 @@
     </div>
   </div>
 
+  <!-- ================= INTERVENTIONS TAB ================= -->
+  <!-- Stage 4: Farmer chooses -> Record -> Follow-up -> Before/After -> Outcome.
+       Reads/writes only through /api/fields/<id>/intervention/{record,history,
+       <id>,<id>/followup,<id>/followup/run} -- see backend/routes/intervention.py.
+       Never re-decides monitor/verify/targeted/field_wide -- that decision
+       comes from the Recommended Intervention panel on the Overview tab. -->
+  <div class="fi-pane" data-pane="interventions" style="display:none;">
+    <div class="row gx-4">
+      <div class="col-lg-12">
+        <div class="fi-block">
+          <h3>Recorded Interventions</h3>
+          <p class="diag-caveat">
+            What you actually chose and did on this field, when it was recorded, its
+            follow-up window, and the before/after comparison once a follow-up analysis
+            has run. Choose an option from the "Recommended Intervention" panel on the
+            Overview tab to add one here.
+          </p>
+          <div id="interventionHistoryContent"><div class="empty-state">Loading interventions…</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= HISTORY TAB ================= -->
   <div class="fi-pane" data-pane="history" style="display:none;">
     <div class="row gx-4">
@@ -186,20 +416,35 @@
 </div>
 
 <!-- ================= INTERVENTION SIMULATOR MODAL ================= -->
-<div class="modal fade" id="interventionSimModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+<!-- ================= OPTION DETAILS MODAL (per-pathway) ================= -->
+<div class="modal fade" id="optionDetailsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
     <div class="modal-content diag-modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">🧪 Intervention Simulator</h5>
+        <h5 class="modal-title" id="optionDetailsModalLabel">Option Details</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body" id="intervSimModalBody">
+      <div class="modal-body" id="optionDetailsModalBody">
         <div class="empty-state">Loading…</div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- ================= RECORD INTERVENTION MODAL ================= -->
+<div class="modal fade" id="recordInterventionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content diag-modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">📋 Record Intervention</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="recordInterventionModalBody">
+        <div class="empty-state">Loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
   const FIELD_ID = {{ field.id }};
@@ -211,5 +456,7 @@
 <script src="{{ url_for('static', filename='js/field_detail.js') }}"></script>
 <script src="{{ url_for('static', filename='js/diagnosis.js') }}"></script>
 <script src="{{ url_for('static', filename='js/intervention.js') }}"></script>
+<script src="{{ url_for('static', filename='js/intervention_records.js') }}"></script>
+<script src="{{ url_for('static', filename='js/intervention_followup.js') }}"></script>
 </body>
 </html>

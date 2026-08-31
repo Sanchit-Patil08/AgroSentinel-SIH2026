@@ -1,3 +1,102 @@
+<!-- UI Stucture I want 
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🛰️ AgroSentinel       Dashboard   My Fields   Pest & Disease     👤 Sanchit │
+│                                                               [Log Out]       │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│  Good day, Sanchit                                      [+ Add Field]        │
+│  TODAY'S FARM STATUS                                                         │
+│                                                                              │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────────────┐ │
+│  │      5       │ │      2       │ │      3       │ │         0            │ │
+│  │ Fields       │ │ Need         │ │ Stable       │ │ Not yet analyzed     │ │
+│  │ monitored    │ │ attention    │ │              │ │                      │ │
+│  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────────────┘ │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🔴 PRIORITY ALERTS                                                           │
+│                                                                              │
+│ ┌──────────────────────────────────────────────────────────────────────────┐ │
+│ │ 🔴 North Plot                                      HIGH STRESS            │ │
+│ │    Rice • 4.21 ha                                                         │ │
+│ │    Stress detected in 10 zones                                            │ │
+│ │                                                        [View Field →]     │ │
+│ └──────────────────────────────────────────────────────────────────────────┘ │
+│                                                                              │
+│ ┌──────────────────────────────────────────────────────────────────────────┐ │
+│ │ 🟡 East Plot                                       NEEDS ATTENTION         │ │
+│ │    Weather conditions may increase crop stress                             │ │
+│ │                                                        [View Field →]     │ │
+│ └──────────────────────────────────────────────────────────────────────────┘ │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│  RECOMMENDED INSPECTIONS                         ACTION CENTER               │
+│  ─────────────────────────                         ─────────────               │
+│                                                                              │
+│  ① North Plot                                    ┌────────────────────────┐  │
+│    Inspect stressed zone                         │          3             │  │
+│    Why: High crop stress                         │  actions recommended  │  │
+│                                                  │        today           │  │
+│  ② East Plot                                    │                        │  │
+│    Check crop after rainfall                     │   [View Actions →]    │  │
+│                                                  └────────────────────────┘  │
+│  ③ South Plot                                                               │
+│    Monitor developing stress                                                │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ MY FIELDS                                                   [ + Add Field ]  │
+│                                                                              │
+│ ┌─────────────────────────────────────────────────────────────────────────┐  │
+│ │ NORTH PLOT                                      🔴 HIGH STRESS            │  │
+│ │ Rice • Vegetative • 4.21 ha                                             │  │
+│ │                                                                         │  │
+│ │ Health                                                                  │  │
+│ │ ████████░░  High Stress                                                 │  │
+│ │                                                                         │  │
+│ │ NDVI        Weather          Last Analysis                               │  │
+│ │ 0.396       🌧️ 27°C         Today                                       │  │
+│ │                                                                         │  │
+│ │                                         [ View Field → ]                 │  │
+│ └─────────────────────────────────────────────────────────────────────────┘  │
+│                                                                              │
+│ ┌──────────────────────────────┐  ┌──────────────────────────────┐          │
+│ │ EAST PLOT                    │  │ SOUTH PLOT                   │          │
+│ │ 🟡 Moderate                 │  │ 🟢 Stable                   │          │
+│ │ Wheat • 2.8 ha              │  │ Rice • 3.4 ha              │          │
+│ │                             │  │                             │          │
+│ │ NDVI  0.52                  │  │ NDVI  0.71                  │          │
+│ │                             │  │                             │          │
+│ │ [ View Field → ]            │  │ [ View Field → ]            │          │
+│ └──────────────────────────────┘  └──────────────────────────────┘          │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+                         OTHER TOOLS
+        ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+        │ 🩺 Pest &        │ │ 🧪 Pesticide     │ │ 📡 Sensor        │
+        │ Disease         │ │ Advisor          │ │ Network          │
+        │                  │ │                  │ │                  │
+        │ [Open →]         │ │ Coming soon      │ │ Coming soon      │
+        └──────────────────┘ └──────────────────┘ └──────────────────┘ 
+
+-->
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,8 +120,13 @@
       <ul class="navbar-nav me-auto">
         <li class="nav-item"><a class="nav-link active" href="/dashboard">Dashboard</a></li>
         <li class="nav-item"><a class="nav-link" href="#field-overview">My Fields</a></li>
-        <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1">Action Center<span class="soon-tag">Soon</span></a></li>
-        <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1">Pest &amp; Disease<span class="soon-tag">Soon</span></a></li>
+        <!-- <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1">Action Center<span class="soon-tag">Soon</span></a></li> -->
+        <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('pest_disease.pest_disease_page') }}">
+        Pest & Disease Detection
+    </a>
+</li>
+
         <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1">Pesticide Advisor<span class="soon-tag">Soon</span></a></li>
         <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1">Sensor Network<span class="soon-tag">Soon</span></a></li>
       </ul>

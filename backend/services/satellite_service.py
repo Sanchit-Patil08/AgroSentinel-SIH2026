@@ -153,8 +153,14 @@ class SatelliteService:
     # Live Copernicus Data Space / Sentinel Hub integration
     # ------------------------------------------------------------------
     def _get_oauth_token(self) -> str:
-        if "token" in self._token_cache:
-            return self._token_cache["token"]
+        now = datetime.now(timezone.utc)
+
+        cached_token = self._token_cache.get("token")
+        expires_at = self._token_cache.get("expires_at")
+
+        if cached_token and expires_at and now < expires_at:
+            return cached_token
+
         resp = requests.post(
             self.config.SH_TOKEN_URL,
             data={
@@ -165,8 +171,18 @@ class SatelliteService:
             timeout=20,
         )
         resp.raise_for_status()
-        token = resp.json()["access_token"]
+
+        token_data = resp.json()
+        token = token_data["access_token"]
+
+        expires_in = int(token_data.get("expires_in", 600))
+
+        # Refresh slightly before actual expiry.
+        expires_at = now + timedelta(seconds=max(expires_in - 30, 30))
+
         self._token_cache["token"] = token
+        self._token_cache["expires_at"] = expires_at
+
         return token
 
     def _fetch_sentinel_hub_bands(self, polygon_coords, bbox) -> Dict:
@@ -261,6 +277,23 @@ class SatelliteService:
             },
             json=payload,
             timeout=120
+        )
+
+        if response.status_code == 401:
+            # Cached token may have expired unexpectedly.
+            self._token_cache.clear()
+
+            token = self._get_oauth_token()
+
+            response = requests.post(
+                self.config.SH_PROCESS_URL,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                    "Accept": "image/tiff"
+                },
+                json=payload,
+                timeout=120
             )
 
         response.raise_for_status()

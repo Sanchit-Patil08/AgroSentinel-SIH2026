@@ -1,0 +1,260 @@
+<!Doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pest & Disease Detection · AgroSentinel</title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/style.css') }}"
+  >
+</head>
+<style>
+    .primary-btn {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  border: none;
+  border-radius: 13px;
+  padding: 13px 16px;
+  margin-top: 8px;
+
+  background-color: #17633f;
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+
+  cursor: pointer;
+  opacity: 1;
+  visibility: visible;
+
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.primary-btn:hover {
+  background-color: #104a2f;
+  color: #ffffff;
+}
+
+.primary-btn:active {
+  transform: translateY(1px);
+}
+
+.primary-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+</style>
+
+<body>
+  <header class="topbar">
+    <a class="brand" href="/dashboard">🛰️ AgroSentinel</a>
+    <a class="back-link" href="/dashboard">← Back to Dashboard</a>
+  </header>
+
+  <main class="page-shell">
+    <section class="hero">
+      <div class="eyebrow">AI crop health tool</div>
+      <h1>Pest & Disease Detection</h1>
+      <p>
+        Describe what you are seeing on the crop and optionally upload a clear
+        plant photo. AgroSentinel uses Gemini to identify possible causes and
+        suggest what you should inspect next.
+      </p>
+    </section>
+
+    <div id="errorBox" class="error-box" role="alert"></div>
+
+    <div class="tool-grid">
+      <!-- INPUT -->
+      <section class="cardx">
+        <div class="card-title-row">
+          <div>
+            <h2>What are you seeing?</h2>
+            <p class="sub">
+              Just a few observations are enough. No technical knowledge is required.
+            </p>
+          </div>
+          <span class="tool-pill">AI CHECK</span>
+        </div>
+
+        <form id="detectForm" enctype="multipart/form-data">
+
+          <div class="mb-3">
+            <label class="form-label" for="crop">Crop</label>
+            <select class="form-select" id="crop" name="crop" required>
+              <option value="">Choose crop</option>
+              <option>Rice</option>
+              <option>Wheat</option>
+              <option>Cotton</option>
+              <option>Maize</option>
+              <option>Soybean</option>
+              <option>Tomato</option>
+              <option>Chilli</option>
+              <option>Potato</option>
+              <option>Onion</option>
+              <option>Sugarcane</option>
+              <option>Grapes</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="stage">
+              Crop stage <span class="optional">(optional)</span>
+            </label>
+            <select class="form-select" id="stage" name="stage">
+              <option value="">Not sure</option>
+              <option>Seedling</option>
+              <option>Vegetative</option>
+              <option>Flowering</option>
+              <option>Fruiting / grain filling</option>
+              <option>Maturity</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="plant_part">Where is the problem?</label>
+            <select class="form-select" id="plant_part" name="plant_part">
+              <option>Leaves</option>
+              <option>Stem</option>
+              <option>Flowers</option>
+              <option>Fruit / pods / grain</option>
+              <option>Roots</option>
+              <option>Whole plant</option>
+              <option>Not sure</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="appearance">
+              What does it look like?
+            </label>
+            <textarea
+              class="form-control"
+              id="appearance"
+              name="appearance"
+              rows="4"
+              maxlength="1200"
+              placeholder="Example: Small brown spots on leaves, some leaves are curling and tiny insects are visible underneath..."
+              required
+            ></textarea>
+            <div class="field-help">
+              Mention spots, holes, insects, curling, yellowing, wilting,
+              powder, webbing, rotting, unusual colour, etc.
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="mb-3">
+              <label class="form-label" for="spread">Where is it happening?</label>
+              <select class="form-select" id="spread" name="spread">
+                <option>Only a few plants</option>
+                <option>Small patch</option>
+                <option>Several patches</option>
+                <option>Across most of the field</option>
+                <option>Not sure</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="speed">How quickly?</label>
+              <select class="form-select" id="speed" name="speed">
+                <option>Just noticed</option>
+                <option>Over a few days</option>
+                <option>Over 1–2 weeks</option>
+                <option>Getting worse quickly</option>
+                <option>Not sure</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="notes">
+              Anything else? <span class="optional">(optional)</span>
+            </label>
+            <textarea
+              class="form-control"
+              id="notes"
+              name="notes"
+              rows="3"
+              maxlength="1500"
+              placeholder="Recent rain, unusual insects, nearby affected plants, previous treatment, or anything else you noticed..."
+            ></textarea>
+          </div>
+
+          <div class="photo-box mb-3">
+            <div class="photo-title">
+              <label class="form-label mb-0" for="photo">
+                Plant photo <span class="optional">(optional)</span>
+              </label>
+              <span class="photo-badge">BEST WITH PHOTO</span>
+            </div>
+
+            <input
+              class="form-control"
+              id="photo"
+              name="photo"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+            >
+
+            <div class="field-help">
+              A clear close-up of the affected leaf/plant is most useful.
+              JPG, PNG or WEBP · maximum 8 MB.
+            </div>
+
+            <img
+              id="photoPreview"
+              class="photo-preview"
+              alt="Selected plant photo preview"
+            >
+          </div>
+
+          <button id="detectBtn" class="primary-btn" type="submit">
+            🔎 Check My Crop
+          </button>
+
+          <div class="privacy-note">
+            This tool does not save a diagnosis or create a database record.
+            The supplied information is sent to Gemini only to generate this
+            one-time result.
+          </div>
+        </form>
+      </section>
+
+      <!-- RESULT -->
+      <section class="cardx result-card">
+        <div id="emptyResult" class="empty-result">
+          <div>
+            <div class="empty-icon">🌱</div>
+            <h2>Your crop check will appear here</h2>
+            <p>
+              You'll get the most likely problem, possible alternatives,
+              field signs to inspect and safe next steps.
+            </p>
+          </div>
+        </div>
+
+        <div id="loading" class="loading">
+          <div class="spinner"></div>
+          <strong>AgroSentinel is checking the crop…</strong>
+          <span>Gemini is analyzing your observations<span id="photoLoadingText"></span>.</span>
+        </div>
+
+        <div id="result" class="result"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='js/pest_disease.js') }}"></script>
+</body>
+</html>

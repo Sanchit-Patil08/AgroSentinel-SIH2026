@@ -158,15 +158,23 @@ def api_delete_field(field_id):
     return jsonify({"ok": True})
 
 
-@fields_bp.post("/api/fields/<int:field_id>/analyze")
-@login_required
-def api_analyze_field(field_id):
-    field = _get_owned_field_or_404(field_id)
+def run_and_persist_field_analysis(field: Field):
+    """Runs the existing Sentinel-2/IoT/historical analysis pipeline for a
+    field and persists a new Analysis + ZoneResult + (best-effort)
+    FeatureSnapshot/RiskAssessment, exactly as api_analyze_field always has.
 
-    try:
-        result = analyze_field(field.polygon, field.crop_type, field.crop_stage)
-    except Exception as exc:  # noqa: BLE001 - surface a clean error to the UI
-        return jsonify({"error": f"Analysis failed: {exc}"}), 500
+    Pulled out into its own function so it is the SINGLE place that runs
+    "Analyze Field" -- both the manual "Analyze / Refresh Analysis" button
+    (api_analyze_field below) and the intervention follow-up re-analysis
+    (backend/routes/intervention.py::api_run_followup) call this same
+    function, per the project brief's "Do NOT create a second independent
+    crop-health analysis system. Reuse the existing FieldAnalyzer."
+
+    Returns (analysis, risk_assessment_or_None). Raises on hard analysis
+    failure (caller decides how to surface that); the risk/feature step is
+    best-effort internally, matching the previous behavior.
+    """
+    result = analyze_field(field.polygon, field.crop_type, field.crop_stage)
 
     summary = result["summary"]
     zones = result["zones"]
@@ -216,16 +224,27 @@ def api_analyze_field(field_id):
     # + IoT + history, then score it with the risk engine. Best-effort --
     # a farmer must still get their satellite analysis even if this step
     # has a problem, exactly like the initial-weather-fetch pattern above.
-    risk_payload = None
+    risk = None
     try:
         risk = _build_intelligence_layer(field, analysis, zones)
-        if risk is not None:
-            risk_payload = risk.to_dict()
     except Exception:  # noqa: BLE001
         logger.exception("Feature/risk pipeline failed for field_id=%s analysis_id=%s", field.id, analysis.id)
 
+    return analysis, risk
+
+
+@fields_bp.post("/api/fields/<int:field_id>/analyze")
+@login_required
+def api_analyze_field(field_id):
+    field = _get_owned_field_or_404(field_id)
+
+    try:
+        analysis, risk = run_and_persist_field_analysis(field)
+    except Exception as exc:  # noqa: BLE001 - surface a clean error to the UI
+        return jsonify({"error": f"Analysis failed: {exc}"}), 500
+
     response = analysis.to_dict(include_zones=True)
-    response["risk"] = risk_payload
+    response["risk"] = risk.to_dict() if risk else None
     return jsonify({"analysis": response})
 
 

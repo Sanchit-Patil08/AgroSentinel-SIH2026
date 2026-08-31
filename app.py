@@ -24,6 +24,7 @@ from backend.routes.auth import auth_bp
 from backend.routes.diagnosis import diagnosis_bp
 from backend.routes.fields import fields_bp
 from backend.routes.intervention import intervention_bp
+from backend.routes.pest_disease import pest_disease_bp
 
 
 def create_app() -> Flask:
@@ -45,6 +46,7 @@ def create_app() -> Flask:
     app.register_blueprint(fields_bp)
     app.register_blueprint(diagnosis_bp)
     app.register_blueprint(intervention_bp)
+    app.register_blueprint(pest_disease_bp)
 
     @app.get("/")
     def landing():

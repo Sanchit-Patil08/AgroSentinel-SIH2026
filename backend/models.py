@@ -821,3 +821,114 @@ class PesticideUse(db.Model):
             "spray_fluid": self.spray_fluid,
             "source": self.source,
         }
+
+
+class Intervention(db.Model):
+    """One 'farmer chose and recorded a treatment plan' event -- Stage 4 of
+    the pipeline, sitting after the (already-implemented) Intervention
+    Decision Gate in backend/services/intervention_engine.py:
+
+        RiskAssessment -> FieldDiagnosis -> recommend_interventions()
+        (pathway: monitor|verify|targeted|field_wide_available)
+        -> farmer picks ONE option -> [this table] -> follow-up ->
+        re-analysis -> before/after -> outcome.
+
+    This table does NOT re-decide anything -- `pathway_at_decision` /
+    `matches_at_decision` / `planning` are a frozen copy of whatever
+    recommend_interventions()/simulate_intervention() already returned at
+    the moment the farmer acted, exactly like FieldDiagnosis.context_snapshot
+    freezes Stage-1/2 context. Re-running the engine later must never
+    silently change what this record says was decided.
+
+    BEFORE / AFTER snapshots are intentionally small, flat JSON dicts
+    (risk_level, stressed/total zones, mean_ndvi, affected_area_ha) rather
+    than foreign keys alone, so a comparison is still meaningful even if a
+    linked Analysis/RiskAssessment row is later deleted -- but the FK
+    columns are also kept for traceability back to the exact source rows.
+    """
+
+    __tablename__ = "interventions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    field_id = db.Column(db.Integer, db.ForeignKey("fields.id"), nullable=False, index=True)
+    diagnosis_id = db.Column(db.Integer, db.ForeignKey("field_diagnoses.id"), nullable=True)
+
+    # ---- frozen decision-gate output at the moment of recording ----
+    pathway_at_decision = db.Column(db.String(30), nullable=False)  # monitor|verify|targeted|field_wide_available
+    matches_at_decision = db.Column(db.JSON, nullable=True)  # [PesticideUse.to_dict(), ...] snapshot
+
+    # ---- what the farmer actually chose ----
+    # 'targeted' | 'field_wide' | 'monitor'  (never chosen for 'verify' --
+    # verify has no pesticide option to select, only monitor/re-diagnose)
+    selected_option = db.Column(db.String(20), nullable=False)
+    pesticide_use_id = db.Column(db.Integer, db.ForeignKey("pesticide_uses.id"), nullable=True)
+    suspected_pest = db.Column(db.String(200), nullable=True)
+
+    affected_zones_at_decision = db.Column(db.JSON, nullable=True)  # {"stressed": int, "total": int}
+    affected_area_ha = db.Column(db.Float, nullable=True)
+
+    # Transparent quantity/cost planning snapshot -- see
+    # intervention_engine.estimate_cost(). Never a guaranteed dose/price.
+    planning = db.Column(db.JSON, nullable=True)
+
+    farmer_notes = db.Column(db.Text, nullable=True)
+
+    # ---- BEFORE snapshot (frozen at record time, never overwritten) ----
+    before_analysis_id = db.Column(db.Integer, db.ForeignKey("analyses.id"), nullable=True)
+    before_risk_assessment_id = db.Column(db.Integer, db.ForeignKey("risk_assessments.id"), nullable=True)
+    before_snapshot = db.Column(db.JSON, nullable=False)
+
+    # ---- follow-up scheduling ----
+    follow_up_window_days_min = db.Column(db.Integer, nullable=True)
+    follow_up_window_days_max = db.Column(db.Integer, nullable=True)
+    follow_up_due_at = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    # 'recorded' -> follow-up not run yet (Scheduled/Due depends on follow_up_due_at)
+    # 'follow_up_completed' -> re-analysis + outcome computed
+    status = db.Column(db.String(30), nullable=False, default="recorded")
+
+    # ---- AFTER snapshot + outcome (filled in by run_followup()) ----
+    after_analysis_id = db.Column(db.Integer, db.ForeignKey("analyses.id"), nullable=True)
+    after_risk_assessment_id = db.Column(db.Integer, db.ForeignKey("risk_assessments.id"), nullable=True)
+    after_snapshot = db.Column(db.JSON, nullable=True)
+    follow_up_completed_at = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    outcome = db.Column(db.String(30), nullable=True)  # positive|limited|no_improvement|worsened|insufficient_data
+    outcome_explanation = db.Column(db.Text, nullable=True)
+
+    created_at = db.Column(db.DateTime(timezone=True), default=_utcnow, nullable=False, index=True)
+    updated_at = db.Column(
+        db.DateTime(timezone=True), default=_utcnow, onupdate=_utcnow, nullable=False
+    )
+
+    field = db.relationship("Field", backref=db.backref("interventions", cascade="all, delete-orphan", order_by="desc(Intervention.created_at)", lazy="dynamic"))
+    diagnosis = db.relationship("FieldDiagnosis")
+    pesticide_use = db.relationship("PesticideUse")
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "field_id": self.field_id,
+            "diagnosis_id": self.diagnosis_id,
+            "pathway_at_decision": self.pathway_at_decision,
+            "selected_option": self.selected_option,
+            "pesticide_use": self.pesticide_use.to_dict() if self.pesticide_use else None,
+            "suspected_pest": self.suspected_pest,
+            "affected_zones_at_decision": self.affected_zones_at_decision,
+            "affected_area_ha": self.affected_area_ha,
+            "planning": self.planning,
+            "farmer_notes": self.farmer_notes,
+            "before_snapshot": self.before_snapshot,
+            "follow_up_window_days_min": self.follow_up_window_days_min,
+            "follow_up_window_days_max": self.follow_up_window_days_max,
+            "follow_up_due_at": self.follow_up_due_at.isoformat() if self.follow_up_due_at else None,
+            "status": self.status,
+            "after_snapshot": self.after_snapshot,
+            "follow_up_completed_at": (
+                self.follow_up_completed_at.isoformat() if self.follow_up_completed_at else None
+            ),
+            "outcome": self.outcome,
+            "outcome_explanation": self.outcome_explanation,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }

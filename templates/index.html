@@ -1,3 +1,178 @@
+<!-- Expected template for this page
+
+┌──────────────────────────────────────────────────────────────┐
+│ NAVBAR                                                       │
+│ 🛰️ AgroSentinel                 My Fields   [Try Demo →]     │
+└──────────────────────────────────────────────────────────────┘
+
+                         HERO
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│  AI-POWERED FIELD INTELLIGENCE                               │
+│                                                              │
+│  Detect crop stress early.                                   │
+│  Find where it is. Understand why. Act precisely.            │
+│                                                              │
+│  AgroSentinel combines satellite, weather and sensor         │
+│  evidence to detect crop stress at field-zone level,         │
+│  guide diagnosis, support targeted intervention,             │
+│  and measure what happened afterward.                        │
+│                                                              │
+│  [ Try Demo → ]       [ See How It Works ]                   │
+│                                                              │
+│  ✓ Zone-level detection   ✓ Evidence-based diagnosis        │
+│  ✓ Decision support       ✓ Follow-up & outcome tracking     │
+│                                                              │
+│                         ┌──────────────────────┐             │
+│                         │  FIELD INTELLIGENCE  │             │
+│                         │                      │             │
+│                         │  🟢 🟢 🟡 🟡 🔴      │             │
+│                         │  🟢 🟡 🔴 🔴 🟢      │             │
+│                         │  🟢 🟢 🟡 🔴 🟢      │             │
+│                         │                      │             │
+│                         │  10 zones analyzed   │             │
+│                         │  5 moderate          │             │
+│                         │  10 stressed         │             │
+│                         └──────────────────────┘             │
+└──────────────────────────────────────────────────────────────┘
+
+
+                    THE PROBLEM
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│  Crop problems are often visible only after damage spreads.  │
+│                                                              │
+│  Weather • Crop stage • Soil • Pest risk • Field variation   │
+│                       ↓                                      │
+│             Usually viewed separately                         │
+│                       ↓                                      │
+│              Delayed field decisions                          │
+│                                                              │
+│  AgroSentinel brings these signals together at field level.  │
+└──────────────────────────────────────────────────────────────┘
+
+
+                 FROM FIELD TO OUTCOME
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│  01             02             03             04             │
+│ DETECT        LOCATE         DIAGNOSE       DECIDE           │
+│                                                              │
+│ Satellite     Zone-wise      Evidence +     Recommended      │
+│ + Weather +   health map     confidence     pathway          │
+│ Sensors                                                     │
+│                                                              │
+│        ↓             ↓             ↓             ↓           │
+│                                                              │
+│  05             06             07                            │
+│   ACT        FOLLOW UP      MEASURE                          │
+│                                                              │
+│ Approved-use  Re-analyze    Before vs                       │
+│ intervention  after window  after outcome                   │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+
+
+                   HOW THE INTELLIGENCE WORKS
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│  MULTIPLE SIGNALS → ONE FIELD RISK PICTURE                   │
+│                                                              │
+│  📡 Satellite       🌦 Weather       📶 Sensors              │
+│       │                  │                 │                  │
+│       └──────────────────┼─────────────────┘                  │
+│                          ↓                                   │
+│                 Spectral Analysis                            │
+│              NDVI · NDRE · SAVI · NDMI                       │
+│                          ↓                                   │
+│                 Zone-wise Risk                               │
+│                          ↓                                   │
+│                 AI Stress Prediction                         │
+│                          ↓                                   │
+│                     Diagnosis                                │
+│                          ↓                                   │
+│              Decision-Support Action                         │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+
+
+                  SEE WHAT THE FARMER SEES
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│                 FIELD INTELLIGENCE                            │
+│                                                              │
+│  ┌──────────────┐  ┌──────────────────┐  ┌────────────────┐ │
+│  │ FIELD HEALTH │  │ WHY IS IT        │  │ WHAT NEXT?     │ │
+│  │              │  │ HAPPENING?      │  │                │ │
+│  │ 🔴 High      │  │ NDVI ↓          │  │ Inspect zone   │ │
+│  │ 10 stressed  │  │ Moisture ↓      │  │ Verify cause   │ │
+│  │ 5 moderate   │  │ Weather risk ↑  │  │ Target action  │ │
+│  └──────────────┘  └──────────────────┘  └────────────────┘ │
+│                                                              │
+│                  [ Explore Demo → ]                           │
+└──────────────────────────────────────────────────────────────┘
+
+
+              THE CLOSED-LOOP DIFFERENCE
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│  Most systems stop here:                                     │
+│                                                              │
+│  Detect → Alert → Farmer acts                                │
+│                         ✕                                   │
+│                                                              │
+│  AgroSentinel continues:                                     │
+│                                                              │
+│  Detect → Diagnose → Decide → Record                         │
+│                         ↓                                    │
+│                    Follow-up                                 │
+│                         ↓                                    │
+│                    Re-analyze                                │
+│                         ↓                                    │
+│                  Before vs After                             │
+│                         ↓                                    │
+│                     Outcome                                  │
+│                                                              │
+│  "Did the field actually improve?"                           │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+
+
+                    SAFETY BY DESIGN
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│  AgroSentinel supports decisions — it does not prescribe    │
+│  blindly.                                                    │
+│                                                              │
+│  ✓ Predictions shown with confidence                         │
+│  ✓ Diagnosis based on available evidence                     │
+│  ✓ Monitor / Verify pathways before treatment                 │
+│  ✓ Approved-use pesticide matching                           │
+│  ✓ Farmer chooses the intervention                           │
+│  ✓ Follow-up measures the actual outcome                     │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+
+
+                       CTA
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│       See what is happening inside a field.                   │
+│                                                              │
+│  Draw a field boundary and explore zone-wise crop health.    │
+│                                                              │
+│                    [ Try Demo → ]                             │
+│                                                              │
+│       Have a real farm?  [ Create Free Account → ]           │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+
+
+FOOTER
+AgroSentinel · Precision Agriculture Intelligence Platform
+
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
