@@ -1,102 +1,3 @@
-<!-- UI Stucture I want 
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ 🛰️ AgroSentinel       Dashboard   My Fields   Pest & Disease     👤 Sanchit │
-│                                                               [Log Out]       │
-└──────────────────────────────────────────────────────────────────────────────┘
-
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                                                                              │
-│  Good day, Sanchit                                      [+ Add Field]        │
-│  TODAY'S FARM STATUS                                                         │
-│                                                                              │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────────────┐ │
-│  │      5       │ │      2       │ │      3       │ │         0            │ │
-│  │ Fields       │ │ Need         │ │ Stable       │ │ Not yet analyzed     │ │
-│  │ monitored    │ │ attention    │ │              │ │                      │ │
-│  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────────────┘ │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ 🔴 PRIORITY ALERTS                                                           │
-│                                                                              │
-│ ┌──────────────────────────────────────────────────────────────────────────┐ │
-│ │ 🔴 North Plot                                      HIGH STRESS            │ │
-│ │    Rice • 4.21 ha                                                         │ │
-│ │    Stress detected in 10 zones                                            │ │
-│ │                                                        [View Field →]     │ │
-│ └──────────────────────────────────────────────────────────────────────────┘ │
-│                                                                              │
-│ ┌──────────────────────────────────────────────────────────────────────────┐ │
-│ │ 🟡 East Plot                                       NEEDS ATTENTION         │ │
-│ │    Weather conditions may increase crop stress                             │ │
-│ │                                                        [View Field →]     │ │
-│ └──────────────────────────────────────────────────────────────────────────┘ │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                                                                              │
-│  RECOMMENDED INSPECTIONS                         ACTION CENTER               │
-│  ─────────────────────────                         ─────────────               │
-│                                                                              │
-│  ① North Plot                                    ┌────────────────────────┐  │
-│    Inspect stressed zone                         │          3             │  │
-│    Why: High crop stress                         │  actions recommended  │  │
-│                                                  │        today           │  │
-│  ② East Plot                                    │                        │  │
-│    Check crop after rainfall                     │   [View Actions →]    │  │
-│                                                  └────────────────────────┘  │
-│  ③ South Plot                                                               │
-│    Monitor developing stress                                                │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ MY FIELDS                                                   [ + Add Field ]  │
-│                                                                              │
-│ ┌─────────────────────────────────────────────────────────────────────────┐  │
-│ │ NORTH PLOT                                      🔴 HIGH STRESS            │  │
-│ │ Rice • Vegetative • 4.21 ha                                             │  │
-│ │                                                                         │  │
-│ │ Health                                                                  │  │
-│ │ ████████░░  High Stress                                                 │  │
-│ │                                                                         │  │
-│ │ NDVI        Weather          Last Analysis                               │  │
-│ │ 0.396       🌧️ 27°C         Today                                       │  │
-│ │                                                                         │  │
-│ │                                         [ View Field → ]                 │  │
-│ └─────────────────────────────────────────────────────────────────────────┘  │
-│                                                                              │
-│ ┌──────────────────────────────┐  ┌──────────────────────────────┐          │
-│ │ EAST PLOT                    │  │ SOUTH PLOT                   │          │
-│ │ 🟡 Moderate                 │  │ 🟢 Stable                   │          │
-│ │ Wheat • 2.8 ha              │  │ Rice • 3.4 ha              │          │
-│ │                             │  │                             │          │
-│ │ NDVI  0.52                  │  │ NDVI  0.71                  │          │
-│ │                             │  │                             │          │
-│ │ [ View Field → ]            │  │ [ View Field → ]            │          │
-│ └──────────────────────────────┘  └──────────────────────────────┘          │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-
-
-                         OTHER TOOLS
-        ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
-        │ 🩺 Pest &        │ │ 🧪 Pesticide     │ │ 📡 Sensor        │
-        │ Disease         │ │ Advisor          │ │ Network          │
-        │                  │ │                  │ │                  │
-        │ [Open →]         │ │ Coming soon      │ │ Coming soon      │
-        └──────────────────┘ └──────────────────┘ └──────────────────┘ 
-
--->
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -145,7 +46,7 @@
   <div class="cc-header">
     <div>
       <p class="cc-eyebrow" id="greetingLine">Good day, {{ current_user.name.split(' ')[0] }}</p>
-      <h1>Today's Farm Status</h1>
+      <h1>Your farm at a glance</h1>
     </div>
     <a class="btn btn-primary" href="/fields/new">+ Add Field</a>
   </div>
@@ -159,7 +60,7 @@
 
   <!-- ============ PRIORITY ALERTS ============ -->
   <section class="cc-section">
-    <div class="cc-section-label">Priority Alerts</div>
+    <div class="cc-section-label">Needs your attention first</div>
     <div id="priorityAlerts">
       <div class="empty-state">Loading…</div>
     </div>
@@ -169,7 +70,7 @@
     <!-- ============ RECOMMENDED INSPECTIONS ============ -->
     <div class="col-lg-5">
       <section class="cc-section">
-        <div class="cc-section-label">Recommended Inspections</div>
+        <div class="cc-section-label">Fields to check today</div>
         <ol class="cc-inspect-list" id="inspectList">
           <li class="empty-state">Loading…</li>
         </ol>
@@ -179,7 +80,7 @@
     <!-- ============ ACTION CENTER PREVIEW + QUICK LINKS ============ -->
     <div class="col-lg-7">
       <section class="cc-section">
-        <div class="cc-section-label">Action Center</div>
+        <div class="cc-section-label">Today's recommended work</div>
         <div class="cc-action-preview" id="actionPreview">
           <div>
             <span class="n" id="actionCount">0</span>
@@ -190,7 +91,7 @@
       </section>
 
       <section class="cc-section">
-        <div class="cc-section-label">Quick Links</div>
+        <div class="cc-section-label">Other tools</div>
         <div class="cc-quicklinks">
           <span class="cc-quicklink">🩺 Pest &amp; Disease<em>Soon</em></span>
           <span class="cc-quicklink">🧪 Pesticide Advisor<em>Soon</em></span>
@@ -202,7 +103,7 @@
 
   <!-- ============ FIELD OVERVIEW ============ -->
   <section class="cc-section" id="field-overview">
-    <div class="cc-section-label">Field Overview</div>
+    <div class="cc-section-label">All your fields</div>
     <div class="field-grid" id="fieldGrid">
       <div class="empty-state">Loading your fields…</div>
     </div>

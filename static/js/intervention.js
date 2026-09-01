@@ -542,27 +542,71 @@ async function refreshOptionDetailQuantity(optionKey) {
   `;
 
   try {
-    const res = await fetch(
-      `/api/fields/${FIELD_ID}/intervention/simulate`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          pesticide_use_id: Number(match.id),
-          affected_area_ha: Number(area)
-        })
-      }
-    );
+    // const res = await fetch(
+    //   `/api/fields/${FIELD_ID}/intervention/simulate`,
+    //   {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json"
+    //     },
+    //     body: JSON.stringify({
+    //       pesticide_use_id: Number(match.id),
+    //       affected_area_ha: Number(area)
+    //     })
+    //   }
+    // );
 
-    const data = await res.json();
+    const pesticideUseId = parseInt(match.id, 10);
+const affectedArea = parseFloat(area);
 
-    if (!res.ok) {
-      throw new Error(
-        data.error || "Could not calculate treatment quantity."
-      );
-    }
+if (!Number.isInteger(pesticideUseId) || pesticideUseId <= 0) {
+  qtyEl.innerHTML = `
+    <div class="diag-caveat">
+      Invalid treatment option. Please reload the intervention guidance.
+    </div>
+  `;
+  return;
+}
+
+if (!Number.isFinite(affectedArea) || affectedArea <= 0) {
+  qtyEl.innerHTML = `
+    <div class="diag-caveat">
+      A valid treatment area could not be determined.
+    </div>
+  `;
+  return;
+}
+
+const res = await fetch(
+  `/api/fields/${FIELD_ID}/intervention/simulate`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      pesticide_use_id: pesticideUseId,
+      affected_area_ha: affectedArea
+    })
+  }
+);
+
+    // const data = await res.json();
+
+    // if (!res.ok) {
+    //   throw new Error(
+    //     data.error || "Could not calculate treatment quantity."
+    //   );
+    // }
+
+    const data = await res.json().catch(() => ({}));
+
+if (!res.ok) {
+  throw new Error(
+    data.error ||
+    `Could not calculate treatment quantity (HTTP ${res.status}).`
+  );
+}
 
     const planning =
       data.simulation &&

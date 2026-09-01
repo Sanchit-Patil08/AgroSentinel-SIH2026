@@ -15,16 +15,399 @@
   >
 </head>
 <style>
-    .primary-btn {
+/* =========================================================
+   AGROSENTINEL — PEST & DISEASE DETECTION
+   ========================================================= */
+
+:root {
+  --ag-green: #17633f;
+  --ag-green-dark: #104a2f;
+  --ag-green-soft: #eaf5ef;
+  --ag-green-light: #f4faf7;
+
+  --text-main: #18342a;
+  --text-muted: #6b7d75;
+  --border: #dfe9e4;
+
+  --white: #ffffff;
+  --page-bg: #f6f9f7;
+
+  --shadow-sm: 0 4px 14px rgba(23, 70, 49, 0.06);
+  --shadow-md: 0 10px 30px rgba(23, 70, 49, 0.08);
+
+  --radius: 16px;
+}
+
+
+/* ---------------------------------------------------------
+   PAGE
+   --------------------------------------------------------- */
+
+body {
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--text-main);
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+.page-shell {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 38px 0 60px;
+}
+
+
+/* ---------------------------------------------------------
+   TOP BAR
+   --------------------------------------------------------- */
+
+.topbar {
+  height: 68px;
+  padding: 0 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  color: var(--ag-green);
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.brand:hover {
+  color: var(--ag-green-dark);
+}
+
+.back-link {
+  color: #587067;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+
+  transition: color 0.15s ease;
+}
+
+.back-link:hover {
+  color: var(--ag-green);
+}
+
+
+/* ---------------------------------------------------------
+   HERO
+   --------------------------------------------------------- */
+
+.hero {
+  margin-bottom: 28px;
+  max-width: 780px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+
+  margin-bottom: 10px;
+  padding: 6px 11px;
+
+  background: var(--ag-green-soft);
+  color: var(--ag-green);
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0 0 10px;
+
+  color: var(--text-main);
+
+  font-size: clamp(30px, 4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -1.2px;
+  line-height: 1.1;
+}
+
+.hero p {
+  margin: 0;
+
+  max-width: 720px;
+
+  color: var(--text-muted);
+
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+
+/* ---------------------------------------------------------
+   ERROR
+   --------------------------------------------------------- */
+
+.error-box {
+  display: none;
+
+  margin-bottom: 20px;
+  padding: 13px 15px;
+
+  background: #fff4f3;
+  border: 1px solid #f0c9c5;
+  border-radius: 12px;
+
+  color: #a33a32;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.error-box.show {
   display: block;
+}
+
+
+/* ---------------------------------------------------------
+   MAIN GRID
+   --------------------------------------------------------- */
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+
+/* ---------------------------------------------------------
+   CARDS
+   --------------------------------------------------------- */
+
+.cardx {
+  background: var(--white);
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+
+  box-shadow: var(--shadow-sm);
+
+  padding: 26px;
+}
+
+.result-card {
+  min-height: 560px;
+
+  display: flex;
+  flex-direction: column;
+
+  position: sticky;
+  top: 24px;
+}
+
+
+/* ---------------------------------------------------------
+   CARD HEADER
+   --------------------------------------------------------- */
+
+.card-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+
+  margin-bottom: 24px;
+}
+
+.card-title-row h2 {
+  margin: 0 0 5px;
+
+  color: var(--text-main);
+
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.sub {
+  margin: 0;
+
+  color: var(--text-muted);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.tool-pill {
+  flex-shrink: 0;
+
+  padding: 6px 10px;
+
+  background: var(--ag-green-soft);
+  color: var(--ag-green);
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+}
+
+
+/* ---------------------------------------------------------
+   FORM
+   --------------------------------------------------------- */
+
+.form-label {
+  margin-bottom: 7px;
+
+  color: #28463a;
+
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.optional {
+  color: #91a099;
+  font-weight: 500;
+}
+
+.form-control,
+.form-select {
+  min-height: 44px;
+
+  border: 1px solid #d7e3dd;
+  border-radius: 10px;
+
+  color: var(--text-main);
+
+  font-size: 14px;
+
+  box-shadow: none;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #76a991;
+
+  box-shadow:
+    0 0 0 3px rgba(23, 99, 63, 0.09);
+}
+
+textarea.form-control {
+  min-height: auto;
+  resize: vertical;
+}
+
+.form-control::placeholder {
+  color: #a0ada7;
+}
+
+
+/* ---------------------------------------------------------
+   TWO COLUMN FORM SECTION
+   --------------------------------------------------------- */
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+
+/* ---------------------------------------------------------
+   FIELD HELP
+   --------------------------------------------------------- */
+
+.field-help {
+  margin-top: 7px;
+
+  color: #84928c;
+
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+
+/* ---------------------------------------------------------
+   PHOTO BOX
+   --------------------------------------------------------- */
+
+.photo-box {
+  margin-top: 4px;
+  padding: 16px;
+
+  background: var(--ag-green-light);
+
+  border: 1px dashed #bdd5c8;
+  border-radius: 13px;
+}
+
+.photo-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 9px;
+}
+
+.photo-badge {
+  padding: 5px 8px;
+
+  background: #ffffff;
+  color: var(--ag-green);
+
+  border: 1px solid #cfe2d8;
+  border-radius: 999px;
+
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.photo-preview {
+  display: none;
+
+  width: 100%;
+  max-height: 240px;
+
+  object-fit: cover;
+
+  margin-top: 12px;
+
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+
+/* ---------------------------------------------------------
+   PRIMARY BUTTON
+   --------------------------------------------------------- */
+
+.primary-btn {
+  display: block;
+
   width: 100%;
   min-height: 48px;
-  border: none;
-  border-radius: 13px;
-  padding: 13px 16px;
-  margin-top: 8px;
 
-  background-color: #17633f;
+  margin-top: 14px;
+  padding: 13px 16px;
+
+  border: none;
+  border-radius: 12px;
+
+  background-color: var(--ag-green);
   color: #ffffff;
 
   font-size: 15px;
@@ -33,15 +416,18 @@
   text-align: center;
 
   cursor: pointer;
-  opacity: 1;
-  visibility: visible;
 
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .primary-btn:hover {
-  background-color: #104a2f;
+  background-color: var(--ag-green-dark);
   color: #ffffff;
+
+  box-shadow: 0 6px 16px rgba(23, 99, 63, 0.16);
 }
 
 .primary-btn:active {
@@ -51,8 +437,225 @@
 .primary-btn:disabled {
   opacity: 0.65;
   cursor: wait;
+  box-shadow: none;
+}
+
+
+/* ---------------------------------------------------------
+   PRIVACY NOTE
+   --------------------------------------------------------- */
+
+.privacy-note {
+  margin-top: 13px;
+
+  color: #87958f;
+
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+
+/* ---------------------------------------------------------
+   EMPTY RESULT
+   --------------------------------------------------------- */
+
+.empty-result {
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-result > div {
+  max-width: 360px;
+}
+
+.empty-icon {
+  width: 62px;
+  height: 62px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 auto 18px;
+
+  background: var(--ag-green-soft);
+
+  border-radius: 50%;
+
+  font-size: 29px;
+}
+
+.empty-result h2 {
+  margin: 0 0 9px;
+
+  color: var(--text-main);
+
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.empty-result p {
+  margin: 0;
+
+  color: var(--text-muted);
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+
+/* ---------------------------------------------------------
+   LOADING
+   --------------------------------------------------------- */
+
+.loading {
+  display: none;
+
+  flex: 1;
+
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  text-align: center;
+  gap: 7px;
+
+  padding: 40px 20px;
+}
+
+.loading strong {
+  color: var(--text-main);
+
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.loading span {
+  color: var(--text-muted);
+
+  font-size: 12px;
+}
+
+.spinner {
+  width: 34px;
+  height: 34px;
+
+  margin-bottom: 8px;
+
+  border: 3px solid #dcebe3;
+  border-top-color: var(--ag-green);
+
+  border-radius: 50%;
+
+  animation: agroSpin 0.8s linear infinite;
+}
+
+@keyframes agroSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ---------------------------------------------------------
+   RESULT CONTENT
+   --------------------------------------------------------- */
+
+.result {
+  color: var(--text-main);
+
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.result:empty {
+  display: none;
+}
+
+
+/* ---------------------------------------------------------
+   RESPONSIVE
+   --------------------------------------------------------- */
+
+@media (max-width: 900px) {
+
+  .tool-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .result-card {
+    position: static;
+    min-height: 420px;
+  }
+
+}
+
+@media (max-width: 650px) {
+
+  .topbar {
+    height: auto;
+    min-height: 62px;
+
+    padding: 12px 18px;
+
+    gap: 12px;
+  }
+
+  .brand {
+    font-size: 16px;
+  }
+
+  .back-link {
+    font-size: 12px;
+  }
+
+  .page-shell {
+    width: min(100% - 24px, 1180px);
+    padding-top: 26px;
+  }
+
+  .hero h1 {
+    font-size: 30px;
+  }
+
+  .hero p {
+    font-size: 14px;
+  }
+
+  .cardx {
+    padding: 19px;
+    border-radius: 14px;
+  }
+
+  .card-title-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .tool-pill {
+    align-self: flex-start;
+  }
+
+  .two-col {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .photo-title {
+    align-items: flex-start;
+    gap: 8px;
+    flex-direction: column;
+  }
 }
 </style>
+
 
 <body>
   <header class="topbar">

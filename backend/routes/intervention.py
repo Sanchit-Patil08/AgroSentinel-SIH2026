@@ -113,44 +113,155 @@ def api_intervention_options(field_id):
     return jsonify({"intervention": result})
 
 
+# @intervention_bp.post("/api/fields/<int:field_id>/intervention/simulate")
+# @login_required
+# def api_intervention_simulate(field_id):
+#     field = _get_owned_field_or_404(field_id)
+#     payload = request.get_json(force=True, silent=True) or {}
+
+#     pesticide_use_id = payload.get("pesticide_use_id")
+#     affected_area_ha = payload.get("affected_area_ha")
+
+#     if not pesticide_use_id:
+#         return jsonify({"error": "pesticide_use_id is required."}), 400
+#     try:
+#         affected_area_ha = float(affected_area_ha)
+#     except (TypeError, ValueError):
+#         return jsonify({"error": "affected_area_ha must be a number."}), 400
+#     if affected_area_ha <= 0:
+#         return jsonify({"error": "affected_area_ha must be greater than 0."}), 400
+
+#     pesticide_use = PesticideUse.query.get(pesticide_use_id)
+
+#     if not pesticide_use:
+#         return jsonify({"error": "Unknown pesticide_use_id."}), 404
+
+#     recommendation = recommend_interventions(field)
+
+#     allowed_ids = {
+#         item["id"]
+#         for item in recommendation.get("matches", [])
+#         if item.get("id") is not None
+#     }
+
+#     if pesticide_use.id not in allowed_ids:
+#         return jsonify({
+#             "error": "This pesticide option is not an approved-use match for the current field intervention."
+#         }), 403
+
+#     result = simulate_intervention(pesticide_use, affected_area_ha)
+#     return jsonify({"simulation": result})
+
 @intervention_bp.post("/api/fields/<int:field_id>/intervention/simulate")
 @login_required
 def api_intervention_simulate(field_id):
     field = _get_owned_field_or_404(field_id)
-    payload = request.get_json(force=True, silent=True) or {}
 
-    pesticide_use_id = payload.get("pesticide_use_id")
-    affected_area_ha = payload.get("affected_area_ha")
+    payload = request.get_json(silent=True) or {}
 
-    if not pesticide_use_id:
-        return jsonify({"error": "pesticide_use_id is required."}), 400
+    # ---------------------------------------------------------
+    # Validate pesticide ID
+    # ---------------------------------------------------------
+    raw_pesticide_id = payload.get("pesticide_use_id")
+
     try:
-        affected_area_ha = float(affected_area_ha)
+        pesticide_use_id = int(raw_pesticide_id)
     except (TypeError, ValueError):
-        return jsonify({"error": "affected_area_ha must be a number."}), 400
-    if affected_area_ha <= 0:
-        return jsonify({"error": "affected_area_ha must be greater than 0."}), 400
+        return jsonify({
+            "error": "pesticide_use_id must be a valid integer."
+        }), 400
 
+    if pesticide_use_id <= 0:
+        return jsonify({
+            "error": "pesticide_use_id must be greater than 0."
+        }), 400
+
+    # ---------------------------------------------------------
+    # Validate affected area
+    # ---------------------------------------------------------
+    raw_area = payload.get("affected_area_ha")
+
+    try:
+        affected_area_ha = float(raw_area)
+    except (TypeError, ValueError):
+        return jsonify({
+            "error": "affected_area_ha must be a valid number."
+        }), 400
+
+    if not affected_area_ha or affected_area_ha <= 0:
+        return jsonify({
+            "error": "affected_area_ha must be greater than 0."
+        }), 400
+
+    # Never allow simulation for an area larger than the field.
+    if field.area_ha and affected_area_ha > float(field.area_ha):
+        return jsonify({
+            "error": (
+                f"affected_area_ha cannot exceed the field area "
+                f"({field.area_ha} ha)."
+            )
+        }), 400
+
+    # ---------------------------------------------------------
+    # Find pesticide record
+    # ---------------------------------------------------------
     pesticide_use = PesticideUse.query.get(pesticide_use_id)
 
-    if not pesticide_use:
-        return jsonify({"error": "Unknown pesticide_use_id."}), 404
+    if pesticide_use is None:
+        return jsonify({
+            "error": "Unknown pesticide_use_id."
+        }), 404
 
-    recommendation = recommend_interventions(field)
+    # ---------------------------------------------------------
+    # Re-check that this product is actually allowed for the
+    # current field diagnosis.
+    # ---------------------------------------------------------
+    try:
+        recommendation = recommend_interventions(field)
+    except Exception as exc:
+        logger.exception(
+            "Intervention recommendation failed during simulation "
+            "for field_id=%s",
+            field.id
+        )
+        return jsonify({
+            "error": f"Could not validate intervention option: {exc}"
+        }), 500
 
     allowed_ids = {
-        item["id"]
-        for item in recommendation.get("matches", [])
+        int(item["id"])
+        for item in (recommendation.get("matches") or [])
         if item.get("id") is not None
     }
 
     if pesticide_use.id not in allowed_ids:
         return jsonify({
-            "error": "This pesticide option is not an approved-use match for the current field intervention."
+            "error": (
+                "This pesticide option is not an approved-use match "
+                "for the current field intervention."
+            )
         }), 403
 
-    result = simulate_intervention(pesticide_use, affected_area_ha)
-    return jsonify({"simulation": result})
+    # ---------------------------------------------------------
+    # Calculate transparent planning quantity
+    # ---------------------------------------------------------
+    try:
+        result = simulate_intervention(
+            pesticide_use,
+            affected_area_ha
+        )
+    except Exception as exc:
+        logger.exception(
+            "Intervention simulation failed for field_id=%s",
+            field.id
+        )
+        return jsonify({
+            "error": f"Could not calculate treatment quantity: {exc}"
+        }), 500
+
+    return jsonify({
+        "simulation": result
+    }), 200
 
 
 # ------------------------------------------------------ Stage 4 routes -----
