@@ -24,7 +24,7 @@ const riskContent = document.getElementById("riskContent");
 
 const fiStatusBadge = document.getElementById("fiStatusBadge");
 const evidenceBullets = document.getElementById("evidenceBullets");
-const mlPredictionContent = document.getElementById("mlPredictionContent");
+// const mlPredictionContent = document.getElementById("mlPredictionContent");
 const fiConfidenceBlock = document.getElementById("fiConfidenceBlock");
 const causeBars = document.getElementById("causeBars");
 const nextStepContent = document.getElementById("nextStepContent");
@@ -95,7 +95,7 @@ function renderOverview() {
   fiStatusBadge.outerHTML = `<span id="fiStatusBadge" class="status-badge ${badge.level}">${badge.html}</span>`;
 
   evidenceBullets.innerHTML = buildEvidenceBulletsHtml(analysis, riskData, sensorData);
-  mlPredictionContent.innerHTML = buildMlPredictionHtml(riskData);
+  // mlPredictionContent.innerHTML = buildMlPredictionHtml(riskData);
   causeBars.innerHTML = buildCauseBarsHtml(riskData);
   nextStepContent.innerHTML = buildNextStepHtml(riskData);
 
